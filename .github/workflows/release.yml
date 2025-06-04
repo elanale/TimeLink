@@ -1,18 +1,13 @@
-# -------------------------------------------------------------------------------
-# Workflow: Build and Release Electron App
-# Triggers on Git tags v*.*.* (e.g. v1.0.1), packages with electron-builder,
-# and publishes to GitHub Releases.
-# -------------------------------------------------------------------------------
 name: Build and Release Electron App
 
 on:
   push:
-    # Only fire when a tag matching v<semver> is pushed
+    # Only run this workflow when a new Git tag matching v*.*.* is pushed
     tags:
       - 'v*.*.*'
 
 permissions:
-  contents: write  # needed for creating releases & uploading assets
+  contents: write  # Allows the action to create and upload release assets
 
 jobs:
   build-and-release:
@@ -24,7 +19,7 @@ jobs:
 
     steps:
       # ───────────────────────────────────────────────────────────────────
-      # Step 1: Check out repository (with full history & tags)
+      # 1) Check out the repository (with full history and tags)
       # ───────────────────────────────────────────────────────────────────
       - name: Check out repository
         uses: actions/checkout@v4
@@ -32,7 +27,7 @@ jobs:
           fetch-depth: 0
 
       # ───────────────────────────────────────────────────────────────────
-      # Step 2: Set up Node.js & npm cache
+      # 2) Set up Node.js and enable npm caching
       # ───────────────────────────────────────────────────────────────────
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -42,15 +37,15 @@ jobs:
           cache-dependency-path: package-lock.json
 
       # ───────────────────────────────────────────────────────────────────
-      # Step 3: Install dependencies
+      # 3) Install dependencies
       # ───────────────────────────────────────────────────────────────────
       - name: Install dependencies
         run: npm ci
 
       # ───────────────────────────────────────────────────────────────────
-      # Step 4: Ensure package.json version matches Git tag
+      # 4) Ensure package.json version matches the Git tag
       # ───────────────────────────────────────────────────────────────────
-      - name: Ensure package.json version matches Git tag
+      - name: Ensure version matches Git tag
         shell: bash
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
@@ -63,16 +58,16 @@ jobs:
           fi
 
       # ───────────────────────────────────────────────────────────────────
-      # Step 5: Build and Publish with electron-builder
+      # 5) Build and publish with electron-builder
       # ───────────────────────────────────────────────────────────────────
       - name: Build and Publish with electron-builder
         id: build_and_publish
         uses: electron-builder/electron-builder-action@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          # If you only want mac targets, uncomment:
+          # (Optional) If you only want to build/publish for mac:
           # targets: mac
-          # If you need code signing on macOS, add:
+          #
+          # (Optional) Once you’re ready to code-sign on macOS, you can uncomment:
           # mac-sign: true
           # mac-codesign-identity: "Developer ID Application: Your Name (TEAMID)"
-        secrets: ${{ secrets.MAC_CERT_PWD }}
