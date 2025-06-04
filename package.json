@@ -1,6 +1,6 @@
 {
   "name": "timelink",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "description": "TimeLink – Electron App with auto-update",
   "main": "main.js",
   "scripts": {
