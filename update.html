@@ -1,0 +1,63 @@
+<!-- update.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Checking for Updates</title>
+    <style>
+      body { font-family: sans-serif; text-align: center; margin: 20px; }
+      #progress { width: 80%; margin: 10px auto; }
+      #status { margin-top: 20px; }
+      button { padding: 8px 16px; font-size: 14px; margin-top: 20px; }
+    </style>
+  </head>
+  <body>
+    <h2 id="title">Checking for Updates…</h2>
+    <div id="progress-container" style="display:none;">
+      <progress id="progress" max="100" value="0"></progress>
+      <div id="percent">0%</div>
+    </div>
+    <div id="status"></div>
+    <div id="buttons" style="display:none;">
+      <button id="restart-btn">Restart to Install</button>
+      <button id="skip-btn">Skip</button>
+    </div>
+
+    <script>
+      const { ipcRenderer } = require('electron');
+
+      ipcRenderer.on('update_available', (event, info) => {
+        document.getElementById('title').innerText = 'Update available. Downloading…';
+        document.getElementById('progress-container').style.display = 'block';
+      });
+
+      ipcRenderer.on('download_progress', (event, progress) => {
+        const percentage = Math.round(progress.percent);
+        document.getElementById('progress').value = percentage;
+        document.getElementById('percent').innerText = `${percentage}%`;
+      });
+
+      ipcRenderer.on('update_downloaded', () => {
+        document.getElementById('title').innerText = 'Update downloaded. Ready to install.';
+        document.getElementById('buttons').style.display = 'block';
+      });
+
+      ipcRenderer.on('update_not_available', () => {
+        document.getElementById('title').innerText = 'No updates available. Launching app…';
+      });
+
+      ipcRenderer.on('error', (event, error) => {
+        document.getElementById('title').innerText = 'Error checking for updates.';
+        document.getElementById('status').innerText = error == null ? '' : error.toString();
+      });
+
+      document.getElementById('restart-btn').addEventListener('click', () => {
+        ipcRenderer.send('restart_app');
+      });
+
+      document.getElementById('skip-btn').addEventListener('click', () => {
+        ipcRenderer.send('skip_update');
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# 1) Node modules (huge folder, rebuilt by `npm install`)
+# ─────────────────────────────────────────────────────────────────────────────
+node_modules/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2) Build output from electron-builder
+#    All installers, packaged apps, and intermediate artifacts live here.
+# ─────────────────────────────────────────────────────────────────────────────
+dist/
+out/
+release/
+build/
+
+# If you ever produce a local .app/.exe/.dmg for testing, don’t commit those:
+*.app
+*.dmg
+*.exe
+*.zip
+*.AppImage
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3) Logs, temp files, and OS‐specific cruft
+# ─────────────────────────────────────────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4) Environment files (often contain secrets), VS Code workspace settings
+# ─────────────────────────────────────────────────────────────────────────────
+.env
+.env.*.local
+
+.vscode/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5) Editor swap/backup files
+# ─────────────────────────────────────────────────────────────────────────────
+*.tmp
+*.swp
+*.swo
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6) macOS extended attributes (optional)
+# ─────────────────────────────────────────────────────────────────────────────
+._*
+.Spotlight-V100
+.Trashes
