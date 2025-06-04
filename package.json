@@ -1,6 +1,6 @@
 {
   "name": "timelink",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "TimeLink – Electron App with auto-update",
   "main": "main.js",
   "scripts": {
@@ -11,13 +11,19 @@
     "appId": "com.elanale.timelink",
     "productName": "TimeLink",
     "mac": {
-      "target": ["dmg", "zip"]
+      "target": [
+        "dmg",
+        "zip"
+      ]
     },
     "win": {
       "target": "nsis"
     },
     "linux": {
-      "target": ["AppImage", "deb"]
+      "target": [
+        "AppImage",
+        "deb"
+      ]
     },
     "publish": [
       {
