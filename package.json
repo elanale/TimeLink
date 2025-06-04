@@ -24,7 +24,7 @@
     "productName": "TimeLink",
     "directories": {
       "output": "dist",
-      "resources": "resources"
+      "buildResources": "resources"
     },
     "files": [
       "**/*",
