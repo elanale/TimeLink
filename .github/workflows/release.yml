@@ -3,10 +3,10 @@ name: Build & Release for Mac + Windows
 on:
   push:
     tags:
-      - 'v*.*.*'        # e.g. v1.0.1, v2.3.4, etc.
+      - 'v*.*.*'
 
 permissions:
-  contents: write     # allows creating/releases and uploading assets
+  contents: write
 
 jobs:
   build-mac:
@@ -17,7 +17,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0                # fetch all tags too
+          fetch-depth: 0
 
       - name: Set up Node.js (mac)
         uses: actions/setup-node@v4
@@ -29,9 +29,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build mac (`.dmg` + `.zip`)
-        run: |
-          npx electron-builder --mac --publish=never
+      - name: Build mac (.dmg + .zip)
+        run: npx electron-builder --mac --publish=never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -63,10 +62,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Windows (`.exe`)
-        # On Windows runner, electron-builder will produce the NSIS installer
-        run: |
-          npx electron-builder --win --publish=never
+      - name: Build Windows (.exe)
+        run: npx electron-builder --win --publish=never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -101,12 +98,12 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref_name }}  # e.g. v1.0.3
+          tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
 
-      - name: Upload mac `.dmg`
+      - name: Upload mac .dmg
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -114,7 +111,7 @@ jobs:
           asset_name: TimeLink-${{ github.ref_name }}.dmg
           asset_content_type: application/octet-stream
 
-      - name: Upload mac `.zip`
+      - name: Upload mac .zip
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -122,7 +119,7 @@ jobs:
           asset_name: TimeLink-${{ github.ref_name }}.zip
           asset_content_type: application/octet-stream
 
-      - name: Upload Windows `.exe`
+      - name: Upload Windows .exe
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
