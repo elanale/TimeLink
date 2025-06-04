@@ -1,56 +1,131 @@
-name: Build and Release TimeLink
+name: Build & Release for Mac + Windows
 
 on:
   push:
     tags:
-      - 'v*'
-  workflow_dispatch:
+      - 'v*.*.*'        # e.g. v1.0.1, v2.3.4, etc.
 
 permissions:
-  contents: write
+  contents: write     # allows creating/releases and uploading assets
 
 jobs:
-  build-and-release:
-    runs-on: ${{ matrix.os }}
-    
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-            platform: mac
-          - os: windows-latest
-            platform: win
-          - os: ubuntu-latest
-            platform: linux
-    
+  build-mac:
+    name: Build macOS Installer
+    runs-on: macos-latest
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build and publish (macOS)
-      if: matrix.platform == 'mac'
-      run: npm run build-publish
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        CSC_IDENTITY_AUTO_DISCOVERY: false
-    
-    - name: Build and publish (Windows)
-      if: matrix.platform == 'win'
-      run: npm run build-publish
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Build and publish (Linux)
-      if: matrix.platform == 'linux'
-      run: npm run build-publish
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0                # fetch all tags too
+
+      - name: Set up Node.js (mac)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build mac (`.dmg` + `.zip`)
+        run: |
+          npx electron-builder --mac --publish=never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload mac artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: mac-dist
+          path: |
+            dist/*.dmg
+            dist/*.zip
+
+  build-win:
+    name: Build Windows Installer
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js (Windows)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Windows (`.exe`)
+        # On Windows runner, electron-builder will produce the NSIS installer
+        run: |
+          npx electron-builder --win --publish=never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: win-dist
+          path: |
+            dist/*.exe
+
+  publish:
+    name: Collect & Publish Release
+    needs:
+      - build-mac
+      - build-win
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download mac artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: mac-dist
+          path: mac-dist/
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: win-dist
+          path: win-dist/
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}  # e.g. v1.0.3
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+
+      - name: Upload mac `.dmg`
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: mac-dist/*.dmg
+          asset_name: TimeLink-${{ github.ref_name }}.dmg
+          asset_content_type: application/octet-stream
+
+      - name: Upload mac `.zip`
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: mac-dist/*.zip
+          asset_name: TimeLink-${{ github.ref_name }}.zip
+          asset_content_type: application/octet-stream
+
+      - name: Upload Windows `.exe`
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: win-dist/*.exe
+          asset_name: TimeLink-Setup-${{ github.ref_name }}.exe
+          asset_content_type: application/octet-stream
