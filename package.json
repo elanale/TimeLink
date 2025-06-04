@@ -1,6 +1,6 @@
 {
   "name": "timelink",
-  "version": "1.0.5",
+  "version": "1.0.4",        // ← this will update when you bump it
   "description": "TimeLink – Electron App with auto-update",
   "main": "main.js",
   "scripts": {
@@ -11,23 +11,14 @@
     "appId": "com.elanale.timelink",
     "productName": "TimeLink",
     "mac": {
-      "target": [
-        "dmg",
-        "zip"
-      ],
-      "arch": [
-        "arm64",
-        "x64"
-      ]
+      "target": ["dmg", "zip"],
+      "arch": ["arm64", "x64"]
     },
     "win": {
       "target": "nsis"
     },
     "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ]
+      "target": ["AppImage", "deb"]
     },
     "publish": [
       {
@@ -38,10 +29,10 @@
     ]
   },
   "dependencies": {
-    "electron": "^<latest-version>",
-    "electron-updater": "^<latest-version>"
+    "electron": "^36.4.0",
+    "electron-updater": "^6.6.2"
   },
   "devDependencies": {
-    "electron-builder": "^<latest-version>"
+    "electron-builder": "^26.0.12"
   }
 }
