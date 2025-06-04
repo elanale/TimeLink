@@ -1,43 +1,71 @@
 {
   "name": "timelink",
-  "version": "1.0.9",
-  "description": "TimeLink – Electron App with auto-update",
+  "version": "1.0.1",
+  "description": "TimeLink - Electron Time Management App",
   "main": "main.js",
+  "homepage": "https://github.com/elanale/TimeLink",
+  "author": "elanale",
+  "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder"
+    "build": "electron-builder",
+    "build-publish": "electron-builder --publish=always",
+    "build-draft": "electron-builder --publish=never",
+    "release": "electron-builder --publish=always"
   },
   "build": {
     "appId": "com.elanale.timelink",
     "productName": "TimeLink",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!node_modules",
+      "!src",
+      "!.git"
+    ],
     "mac": {
+      "category": "public.app-category.productivity",
       "target": [
-        "dmg",
-        "zip"
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
       ]
     },
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        }
+      ]
     },
     "linux": {
       "target": [
-        "AppImage",
-        "deb"
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
       ]
     },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "elanale",
-        "repo": "TimeLink"
-      }
-    ]
+    "publish": {
+      "provider": "github",
+      "owner": "elanale",
+      "repo": "TimeLink",
+      "private": false
+    }
   },
   "dependencies": {
-    "electron-updater": "^6.6.2"
+    "electron-updater": "^6.1.7"
   },
   "devDependencies": {
-    "electron": "^36.4.0",
-    "electron-builder": "^26.0.12"
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4"
   }
 }

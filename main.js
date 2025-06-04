@@ -6,6 +6,18 @@ const path = require('path');
 let mainWindow = null;
 let updateWindow = null;
 
+// Configure the update server URL to point to your GitHub releases
+autoUpdater.setFeedURL({
+  provider: 'github',
+  owner: 'elanale',
+  repo: 'TimeLink',
+  private: false
+});
+
+// Optional: Configure update behavior
+autoUpdater.autoDownload = false; // We'll start download manually
+autoUpdater.allowPrerelease = false; // Set to true if you want to include pre-releases
+
 function createUpdateWindow() {
   updateWindow = new BrowserWindow({
     width: 400,
@@ -18,7 +30,9 @@ function createUpdateWindow() {
       contextIsolation: false,
     }
   });
+
   updateWindow.loadFile(path.join(__dirname, 'update.html'));
+  
   updateWindow.once('ready-to-show', () => {
     updateWindow.show();
   });
@@ -34,7 +48,9 @@ function createMainWindow() {
       contextIsolation: false,
     }
   });
+
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     if (updateWindow) {
@@ -46,60 +62,82 @@ function createMainWindow() {
 
 app.on('ready', () => {
   createUpdateWindow();
-
-  // 1. Configure update URL based on GitHub Releases
-  autoUpdater.autoDownload = false; // we’ll start download manually once update is found
-
-  // 2. Check for updates right away
+  
+  // Check for updates
   autoUpdater.checkForUpdates();
-
-  // 3. Listen for “update-available”
-  autoUpdater.on('update-available', (info) => {
-    // send a message to the updateWindow renderer to show “Download Available”
-    if (updateWindow) {
-      updateWindow.webContents.send('update_available', info);
-    }
-    // start download
-    autoUpdater.downloadUpdate();
-  });
-
-  // 4. Update download progress
-  autoUpdater.on('download-progress', (progressObj) => {
-    if (updateWindow) {
-      updateWindow.webContents.send('download_progress', progressObj);
-    }
-  });
-
-  // 5. Once update is downloaded, tell the updater window to show “Restart to install”
-  autoUpdater.on('update-downloaded', () => {
-    if (updateWindow) {
-      updateWindow.webContents.send('update_downloaded');
-    }
-  });
-
-  // 6. If no update is found, or after “checking” is done, just open main window
-  autoUpdater.on('update-not-available', () => {
-    // small delay so splash doesn’t flicker too quickly
-    setTimeout(() => {
-      createMainWindow();
-    }, 500);
-  });
-
-  autoUpdater.on('error', (err) => {
-    console.error('AutoUpdater error:', err);
-    // proceed to main window on error
-    setTimeout(() => {
-      createMainWindow();
-    }, 500);
-  });
 });
 
-// Handle user action from updateWindow (renderer) to restart and install
+// Auto-updater event handlers
+autoUpdater.on('checking-for-update', () => {
+  console.log('Checking for update...');
+  if (updateWindow) {
+    updateWindow.webContents.send('checking_for_update');
+  }
+});
+
+autoUpdater.on('update-available', (info) => {
+  console.log('Update available:', info);
+  if (updateWindow) {
+    updateWindow.webContents.send('update_available', info);
+  }
+  // Start download
+  autoUpdater.downloadUpdate();
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  console.log('Update not available:', info);
+  if (updateWindow) {
+    updateWindow.webContents.send('update_not_available');
+  }
+  // Proceed to main window after a brief delay
+  setTimeout(() => {
+    createMainWindow();
+  }, 1000);
+});
+
+autoUpdater.on('error', (err) => {
+  console.error('AutoUpdater error:', err);
+  if (updateWindow) {
+    updateWindow.webContents.send('update_error', err.message);
+  }
+  // Proceed to main window on error
+  setTimeout(() => {
+    createMainWindow();
+  }, 2000);
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  console.log('Download progress:', progressObj.percent);
+  if (updateWindow) {
+    updateWindow.webContents.send('download_progress', progressObj);
+  }
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('Update downloaded:', info);
+  if (updateWindow) {
+    updateWindow.webContents.send('update_downloaded');
+  }
+});
+
+// IPC handlers
 ipcMain.on('restart_app', () => {
   autoUpdater.quitAndInstall();
 });
 
-// If you want to allow skipping updates, e.g. on “Remind me later” button:
 ipcMain.on('skip_update', () => {
   createMainWindow();
+});
+
+// Handle app window events
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createMainWindow();
+  }
 });
