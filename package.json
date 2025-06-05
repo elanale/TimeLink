@@ -1,6 +1,6 @@
 {
   "name": "timelink",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "TimeLink - Electron Time Management App",
   "main": "main.js",
   "homepage": "https://github.com/elanale/TimeLink",
@@ -29,6 +29,7 @@
     "mac": {
       "category": "public.app-category.productivity",
       "icon": "assets/icon.icns",
+      "identity": null,
       "target": [
         {
           "target": "zip",
