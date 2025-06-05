@@ -6,7 +6,7 @@ const path = require('path');
 let mainWindow = null;
 let updateWindow = null;
 
-// Configure the update server URL to point to your GitHub releases
+// Point to your GitHub repo’s Releases so electron-updater can fetch updates
 autoUpdater.setFeedURL({
   provider: 'github',
   owner: 'elanale',
@@ -14,9 +14,9 @@ autoUpdater.setFeedURL({
   private: false
 });
 
-// Optional: Configure update behavior
-autoUpdater.autoDownload = false; // We'll start download manually
-autoUpdater.allowPrerelease = false; // Set to true if you want to include pre-releases
+// Automatically download as soon as an update is found
+autoUpdater.autoDownload = true;
+autoUpdater.allowPrerelease = false;
 
 function createUpdateWindow() {
   updateWindow = new BrowserWindow({
@@ -32,7 +32,6 @@ function createUpdateWindow() {
   });
 
   updateWindow.loadFile(path.join(__dirname, 'update.html'));
-  
   updateWindow.once('ready-to-show', () => {
     updateWindow.show();
   });
@@ -50,7 +49,6 @@ function createMainWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
-  
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     if (updateWindow) {
@@ -62,12 +60,12 @@ function createMainWindow() {
 
 app.on('ready', () => {
   createUpdateWindow();
-  
-  // Check for updates
+
+  // Start checking for updates immediately
   autoUpdater.checkForUpdates();
 });
 
-// Auto-updater event handlers
+// Event: searching for update
 autoUpdater.on('checking-for-update', () => {
   console.log('Checking for update...');
   if (updateWindow) {
@@ -75,61 +73,61 @@ autoUpdater.on('checking-for-update', () => {
   }
 });
 
+// Event: found update, will download automatically (autoDownload = true)
 autoUpdater.on('update-available', (info) => {
-  console.log('Update available:', info);
+  console.log('Update available:', info.version);
   if (updateWindow) {
     updateWindow.webContents.send('update_available', info);
   }
-  // Start download
-  autoUpdater.downloadUpdate();
+  // No need to call downloadUpdate(), because autoDownload is true
 });
 
+// Event: no update found
 autoUpdater.on('update-not-available', (info) => {
-  console.log('Update not available:', info);
+  console.log('Update not available:', info.version);
   if (updateWindow) {
     updateWindow.webContents.send('update_not_available');
-  }
-  // Proceed to main window after a brief delay
-  setTimeout(() => {
+  } else {
     createMainWindow();
-  }, 1000);
+  }
 });
 
+// Event: error during checking/downloading
 autoUpdater.on('error', (err) => {
   console.error('AutoUpdater error:', err);
   if (updateWindow) {
-    updateWindow.webContents.send('update_error', err.message);
-  }
-  // Proceed to main window on error
-  setTimeout(() => {
+    updateWindow.webContents.send('update_error', err == null ? '' : err.toString());
+  } else {
     createMainWindow();
-  }, 2000);
+  }
 });
 
+// Event: download progress
 autoUpdater.on('download-progress', (progressObj) => {
-  console.log('Download progress:', progressObj.percent);
   if (updateWindow) {
     updateWindow.webContents.send('download_progress', progressObj);
   }
 });
 
+// Event: update is downloaded and ready to install
 autoUpdater.on('update-downloaded', (info) => {
-  console.log('Update downloaded:', info);
+  console.log('Update downloaded:', info.version);
   if (updateWindow) {
     updateWindow.webContents.send('update_downloaded');
   }
+  // Immediately quit and install (no prompt)
+  setTimeout(() => {
+    autoUpdater.quitAndInstall();
+  }, 500); // give UI half a second to show “Installing…”
 });
 
-// IPC handlers
-ipcMain.on('restart_app', () => {
-  autoUpdater.quitAndInstall();
+// If update fails or user has no update, the renderer sends this message to open the main window
+ipcMain.on('launch_main', () => {
+  if (!mainWindow) {
+    createMainWindow();
+  }
 });
 
-ipcMain.on('skip_update', () => {
-  createMainWindow();
-});
-
-// Handle app window events
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();

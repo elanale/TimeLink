@@ -3,60 +3,75 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Checking for Updates</title>
+    <title>Updating...</title>
     <style>
-      body { font-family: sans-serif; text-align: center; margin: 20px; }
-      #progress { width: 80%; margin: 10px auto; }
-      #status { margin-top: 20px; }
-      button { padding: 8px 16px; font-size: 14px; margin-top: 20px; }
+      body {
+        font-family: sans-serif;
+        text-align: center;
+        margin: 20px;
+      }
+      #progress-container {
+        width: 80%;
+        margin: 20px auto;
+      }
+      #percent {
+        margin-top: 10px;
+      }
+      #status {
+        margin-top: 20px;
+        color: #555;
+      }
     </style>
   </head>
   <body>
     <h2 id="title">Checking for Updates…</h2>
-    <div id="progress-container" style="display:none;">
-      <progress id="progress" max="100" value="0"></progress>
+
+    <div id="progress-container" style="display: none;">
+      <progress id="progress" max="100" value="0" style="width:100%;"></progress>
       <div id="percent">0%</div>
     </div>
+
     <div id="status"></div>
-    <div id="buttons" style="display:none;">
-      <button id="restart-btn">Restart to Install</button>
-      <button id="skip-btn">Skip</button>
-    </div>
 
     <script>
       const { ipcRenderer } = require('electron');
 
-      ipcRenderer.on('update_available', (event, info) => {
-        document.getElementById('title').innerText = 'Update available. Downloading…';
+      // When updater tells us an update is available, show progress bar
+      ipcRenderer.on('update_available', () => {
+        document.getElementById('title').innerText = 'Update found. Downloading…';
         document.getElementById('progress-container').style.display = 'block';
+        document.getElementById('status').innerText = '';
       });
 
-      ipcRenderer.on('download_progress', (event, progress) => {
-        const percentage = Math.round(progress.percent);
-        document.getElementById('progress').value = percentage;
-        document.getElementById('percent').innerText = `${percentage}%`;
+      // Update the progress bar as data comes in
+      ipcRenderer.on('download_progress', (event, progressObj) => {
+        const percent = Math.round(progressObj.percent);
+        document.getElementById('progress').value = percent;
+        document.getElementById('percent').innerText = `${percent}%`;
       });
 
+      // As soon as the download is complete, show a final message
+      // (we’ll quit & install automatically)
       ipcRenderer.on('update_downloaded', () => {
-        document.getElementById('title').innerText = 'Update downloaded. Ready to install.';
-        document.getElementById('buttons').style.display = 'block';
+        document.getElementById('title').innerText = 'Download complete. Installing…';
+        document.getElementById('status').innerText = 'Please wait while the app restarts…';
       });
 
+      // If no update is found, show a quick “launching” message
       ipcRenderer.on('update_not_available', () => {
-        document.getElementById('title').innerText = 'No updates available. Launching app…';
+        document.getElementById('title').innerText = 'No updates available. Launching…';
+        setTimeout(() => {
+          ipcRenderer.send('launch_main');
+        }, 1000);
       });
 
-      ipcRenderer.on('error', (event, error) => {
-        document.getElementById('title').innerText = 'Error checking for updates.';
-        document.getElementById('status').innerText = error == null ? '' : error.toString();
-      });
-
-      document.getElementById('restart-btn').addEventListener('click', () => {
-        ipcRenderer.send('restart_app');
-      });
-
-      document.getElementById('skip-btn').addEventListener('click', () => {
-        ipcRenderer.send('skip_update');
+      // If there’s an error during update, show it and then proceed
+      ipcRenderer.on('update_error', (event, message) => {
+        document.getElementById('title').innerText = 'Update error';
+        document.getElementById('status').innerText = message;
+        setTimeout(() => {
+          ipcRenderer.send('launch_main');
+        }, 2000);
       });
     </script>
   </body>
