@@ -1,6 +1,6 @@
 {
   "name": "timelink",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "TimeLink - Electron Time Management App",
   "main": "main.js",
   "homepage": "https://github.com/elanale/TimeLink",
