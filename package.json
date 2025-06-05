@@ -26,15 +26,6 @@
       "output": "dist",
       "buildResources": "resources"
     },
-    "files": [
-      "**/*",
-      "!node_modules",
-      "!src",
-      "!.git",
-      "!dist",
-      "!.github",
-      "!README.md"
-    ],
     "mac": {
       "category": "public.app-category.productivity",
       "icon": "assets/icon.icns",
