@@ -1,6 +1,6 @@
 {
   "name": "timelink",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "TimeLink - Electron Time Management App",
   "main": "main.js",
   "homepage": "https://github.com/elanale/TimeLink",
@@ -13,11 +13,11 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
-    "build": "electron-builder",
-    "build-publish": "electron-builder --publish=always",
-    "build-draft": "electron-builder --publish=never",
-    "release": "electron-builder --publish=always",
-    "dist": "electron-builder --publish=never"
+    "build": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder",
+    "build-publish": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --publish=always",
+    "build-draft": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --publish=never",
+    "release": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --publish=always",
+    "dist": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --publish=never"
   },
   "build": {
     "appId": "com.elanale.timelink",
@@ -30,6 +30,10 @@
       "category": "public.app-category.productivity",
       "icon": "assets/icon.icns",
       "identity": null,
+      "entitlements": false,
+      "entitlementsInherit": false,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
       "target": [
         {
           "target": "zip",
