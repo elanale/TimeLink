@@ -19,6 +19,10 @@ export default function EmploymentClock() {
   const [totalHours, setTotalHours] = useState(0);
 
   const handleClockIn = async () => {
+    if (status === "in") {
+      console.warn('Error: Already clocked in.');
+      return;
+    }
     const now = new Date();
     setClockInTime(now.toLocaleTimeString());
     setClockOutTime(null);
