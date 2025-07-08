@@ -25,3 +25,5 @@ node_modules
 # Logs
 logs
 *.log
+#fire base config
+src/components/firebase.ts
