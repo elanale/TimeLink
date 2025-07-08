@@ -37,6 +37,10 @@ export default function EmploymentClock() {
   };
 
   const handleClockOut = async () => {
+    if (status === "out") {
+      console.warn('Error: Already clocked out.');
+      return;
+    }
     const now = new Date();
     setClockOutTime(now.toLocaleTimeString());
     setStatus("out");
