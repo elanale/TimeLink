@@ -63,6 +63,15 @@ export default function EmploymentClock() {
     fetchLogs();
   };
 
+  const handleClock = async () => {
+    if (status === "in") {
+      await handleClockOut();
+    }
+    else {
+      await handleClockIn();
+    }
+  };
+
   const fetchLogs = async () => {
     const logsRef = collection(db, "timeLogs", user!.uid, "logs");
     const snapshot = await getDocs(logsRef);
@@ -130,16 +139,9 @@ export default function EmploymentClock() {
 
       <div className="flex justify-center gap-4">
         <button
-          onClick={handleClockIn}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-        >
-          Clock In
-        </button>
-        <button
-          onClick={handleClockOut}
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
-        >
-          Clock Out
+        onClick={handleClock}
+        className={status === "in" ? "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded" : "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"}>
+          {status === "in" ? "Clock Out" : "Clock In"}
         </button>
       </div>
 
