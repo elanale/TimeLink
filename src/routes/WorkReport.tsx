@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function WorkReport(props: {
     isOpen: boolean;
@@ -7,6 +7,7 @@ export default function WorkReport(props: {
     onClose: () => void;
 }) {
     const {isOpen, status, onSave, onClose} = props;
+
     if (!isOpen) return null;
 
     const handleBackdropClick = () => {
@@ -14,6 +15,10 @@ export default function WorkReport(props: {
     };
 
     const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
+
+    const [plan, setPlan] = useState('');
+    const [report, setReport] = useState('');
+    const [error, setError] = useState('');
 
     return (
         <div
@@ -31,10 +36,25 @@ export default function WorkReport(props: {
                 </h2>
 
                 <div className="space-y-4 mb-4">
-                    <p className="text-gray-700 dark:text-gray-300">
-                        (form fields go here)
-                    </p>
+                    <textarea
+                        value={status === 'in' ? plan : report}
+                        onChange={e => {
+                            setError('');
+                            status === 'in' ? setPlan(e.target.value) : setReport(e.target.value);
+                        }}
+                        rows={4}
+                        className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                        placeholder={
+                            status === 'in'
+                                ? 'Today I plan to...'
+                                : 'Today I accomplished...'
+                        }
+                    />
+                    {error && (
+                        <p className="text-red-500 text-sm mt-1">{error}</p>
+                    )}
                 </div>
+
 
                 <div className="flex justify-end gap-2">
                     <button
@@ -46,8 +66,11 @@ export default function WorkReport(props: {
                     </button>
                     <button
                         type="button"
-                        onClick={() => {
-                            onSave({ plan: status === 'in' ? '' : undefined, report: status === 'out' ? '' : undefined });
+                        onClick ={() => {
+                            const value = (status === 'in' ? plan : report).trim();
+                            if (!value) { setError('This field is required.'); return; }
+                            if (value.length > 500) { setError('Must be 500 characters or less.'); return; }
+                            onSave(status === 'in' ? { plan : value } : { report : value});
                         }}
                         className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
                     >
