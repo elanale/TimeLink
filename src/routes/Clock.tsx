@@ -64,14 +64,21 @@ export default function EmploymentClock() {
     fetchLogs();
   };
 
-  const handleClock = async () => {
+  const handleReport = () => {
     if (status === "in") {
-      await handleClockOut();
       setReportMode("out");
     }
     else {
-      await handleClockIn();
       setReportMode("in");
+    }
+  }
+
+  const handleClock = async (note? : string) => {
+    if (status === "in") {
+      await handleClockOut();
+    }
+    else {
+      await handleClockIn();
     }
   };
 
@@ -142,20 +149,19 @@ export default function EmploymentClock() {
 
       <div className="flex justify-center gap-4">
         <button
-        onClick={handleClock}
+        onClick={handleReport}
         className={status === "in" ? "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded" : "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"}>
           {status === "in" ? "Clock Out" : "Clock In"}
         </button>
         <WorkReport
             isOpen={reportMode !== null}
-            status={reportMode ?? "in"}      // fallback, but only shown when modalMode is not null
-            onSave={(payload) => {
-              console.log("onSave payload:", payload);
-              // after saving, close the test modal
+            status={reportMode!}
+            onSave={async (payload) => {
+              const note = reportMode === "in" ? payload.plan : payload.report;
+              await handleClock(note);
               setReportMode(null);
             }}
             onClose={() => {
-              console.log("onClose clicked");
               setReportMode(null);
             }}
         />
