@@ -9,12 +9,14 @@ import {
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthContext";
 import { db } from "@/components/firebase";
+import WorkReport from "./WorkReport";
 
 export default function EmploymentClock() {
   const { user } = useAuth();
   const [clockInTime, setClockInTime] = useState<string | null>(null);
   const [clockOutTime, setClockOutTime] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "in" | "out">("idle");
+  const [reportMode, setReportMode] = useState<null | "in" | "out">(null);
   const [logs, setLogs] = useState<any[]>([]);
   const [totalHours, setTotalHours] = useState(0);
 
@@ -27,7 +29,6 @@ export default function EmploymentClock() {
     setClockInTime(now.toLocaleTimeString());
     setClockOutTime(null);
     setStatus("in");
-
     await addDoc(collection(db, "timeLogs", user!.uid, "logs"), {
       clockIn: Timestamp.fromDate(now),
       clockOut: null,
@@ -66,9 +67,11 @@ export default function EmploymentClock() {
   const handleClock = async () => {
     if (status === "in") {
       await handleClockOut();
+      setReportMode("out");
     }
     else {
       await handleClockIn();
+      setReportMode("in");
     }
   };
 
@@ -143,6 +146,19 @@ export default function EmploymentClock() {
         className={status === "in" ? "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded" : "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"}>
           {status === "in" ? "Clock Out" : "Clock In"}
         </button>
+        <WorkReport
+            isOpen={reportMode !== null}
+            status={reportMode ?? "in"}      // fallback, but only shown when modalMode is not null
+            onSave={(payload) => {
+              console.log("onSave payload:", payload);
+              // after saving, close the test modal
+              setReportMode(null);
+            }}
+            onClose={() => {
+              console.log("onClose clicked");
+              setReportMode(null);
+            }}
+        />
       </div>
 
       <div className="text-left text-gray-700 dark:text-gray-300 space-y-2">
