@@ -2,11 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 
-
-
-
-
-
 export const Route = createFileRoute("/")({
   component: App,
   head: () => ({

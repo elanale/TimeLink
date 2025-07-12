@@ -204,3 +204,14 @@ export interface TimeSummary {
   // Metadata
   calculatedAt: Timestamp;
 }
+
+export interface PublicInvitationToken {
+  organizationId: string;
+  organizationName: string;
+  email: string;
+  role: 'manager' | 'employee';
+  invitedByName: string;
+  expiresAt: Timestamp;
+  status: 'pending' | 'accepted' | 'expired';
+  invitationId: string; // Reference to full invitation
+}
