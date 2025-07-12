@@ -1,3 +1,4 @@
+// src/components/WorkReport.tsx
 import React, { useState } from 'react';
 
 export default function WorkReport(props: {
