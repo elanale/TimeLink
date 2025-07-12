@@ -1,14 +1,15 @@
-// src/services/organizationService.ts
+// src/services/organizationService.ts - FIXED
 
 import { 
   doc, 
   setDoc, 
   getDoc, 
+  collection,  // Added this import
   serverTimestamp,
   Timestamp 
 } from "firebase/firestore";
 import { auth, db } from "@/components/firebase";
-import type { Organization, User } from "@/types/models";
+import type { Organization } from "@/types/models";
 
 export class OrganizationService {
   
@@ -19,7 +20,8 @@ export class OrganizationService {
     industry?: string;
     phone?: string;
   }): Promise<string> {
-    const orgId = doc(db, 'organizations').id; // Generate ID
+    // FIX: Use collection() to generate proper document reference
+    const orgId = doc(collection(db, 'organizations')).id;
     
     const organization: Omit<Organization, 'id'> = {
       name: data.name,

@@ -205,7 +205,7 @@ function InvitePage() {
                 value={role}
                 onChange={(e) => setRole(e.target.value as 'manager' | 'employee')}
                 className="p-2 rounded border dark:bg-gray-700 dark:text-white"
-                disabled={!profile.isAdmin} // Only admins can invite managers
+                disabled={profile.role !== 'admin'} 
               >
                 <option value="employee">Employee</option>
                 {profile.role === 'admin' && (

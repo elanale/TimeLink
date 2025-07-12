@@ -1,15 +1,17 @@
-import { Link, useNavigate } from "@tanstack/react-router"; // ✅ Added useNavigate
+// src/components/NavBar.tsx - Added Invite navigation
+
+import { Link, useNavigate } from "@tanstack/react-router";
 import { signOut } from "firebase/auth";
 import { useAuth } from "@/components/AuthContext";
 import { auth } from "@/components/firebase";
 
 export default function NavBar() {
-  const { user } = useAuth();
-  const navigate = useNavigate(); // ✅ Create navigation hook
+  const { user, isManager, isAdmin } = useAuth(); // Added isManager and isAdmin
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await signOut(auth);
-    navigate({ to: "/login" }); // ✅ Redirect after logout
+    navigate({ to: "/login" });
   };
 
   return (
@@ -30,6 +32,15 @@ export default function NavBar() {
             <li>
               <Link to="/dashboard" className="hover:text-blue-500 dark:hover:text-blue-300 transition">
                 Dashboard
+              </Link>
+            </li>
+          )}
+
+          {/* NEW: Invite link for managers and admins */}
+          {user && (isManager || isAdmin) && (
+            <li>
+              <Link to="/invite" className="hover:text-blue-500 dark:hover:text-blue-300 transition">
+                Invite Users
               </Link>
             </li>
           )}

@@ -1,4 +1,4 @@
-// src/components/AuthContext.tsx
+// src/components/AuthContext.tsx - Fixed with proper types
 
 import type { User as FirebaseUser } from "firebase/auth";
 import { onAuthStateChanged } from "firebase/auth";
@@ -6,11 +6,12 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { auth } from "./firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "./firebase";
+import type { User, Organization } from "@/types/models"; // Import proper types
 
 interface AuthState {
-  user: FirebaseUser | null;  // Firebase Auth user
-  profile: any | null;        // Firestore user document
-  organization: any | null;   // Organization data
+  user: FirebaseUser | null;
+  profile: User | null;           // Changed from any to User type
+  organization: Organization | null; // Changed from any to Organization type
   loading: boolean;
   emailVerified: boolean;
   isAdmin: boolean;
@@ -31,8 +32,8 @@ const AuthContext = createContext<AuthState>({
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [profile, setProfile] = useState<any | null>(null);
-  const [organization, setOrganization] = useState<any | null>(null);
+  const [profile, setProfile] = useState<User | null>(null);           // Proper typing
+  const [organization, setOrganization] = useState<Organization | null>(null); // Proper typing
   const [emailVerified, setEmailVerified] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -47,14 +48,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           // Load user profile from Firestore
           const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
           if (userDoc.exists()) {
-            const userData = { id: userDoc.id, ...userDoc.data() };
+            const userData = { id: userDoc.id, ...userDoc.data() } as User; // Type assertion
             setProfile(userData);
             
-            // Load organization data
+            // Load organization data - now TypeScript knows organizationId exists
             if (userData.organizationId) {
               const orgDoc = await getDoc(doc(db, "organizations", userData.organizationId));
               if (orgDoc.exists()) {
-                setOrganization({ id: orgDoc.id, ...orgDoc.data() });
+                const orgData = { id: orgDoc.id, ...orgDoc.data() } as Organization; // Type assertion
+                setOrganization(orgData);
               }
             }
           }

@@ -28,58 +28,60 @@ export class InvitationService {
   }
   
   // Create an invitation
-  static async createInvitation(data: {
-    organizationId: string;
-    email: string;
-    role: 'manager' | 'employee';
-    invitedBy: string;
-    invitedByName: string;
-    firstName?: string;
-    lastName?: string;
-    department?: string;
-    managerId?: string;
-  }): Promise<string> {
-    // Check if invitation already exists for this email in this org
-    const existingInvite = await this.getActiveInvitationByEmail(
-      data.organizationId, 
-      data.email
-    );
-    
-    if (existingInvite) {
-      throw new Error("An invitation has already been sent to this email address");
-    }
-    
-    // Check if user already exists in organization
-    const existingUser = await this.checkUserExists(data.organizationId, data.email);
-    if (existingUser) {
-      throw new Error("A user with this email already exists in your organization");
-    }
-    
-    const invitationId = doc(collection(db, 'invitations')).id;
-    const token = this.generateToken();
-    
-    const invitation: Omit<Invitation, 'id'> = {
-      organizationId: data.organizationId,
-      email: data.email.toLowerCase(),
-      role: data.role,
-      invitedBy: data.invitedBy,
-      invitedByName: data.invitedByName,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      department: data.department,
-      managerId: data.managerId,
-      status: 'pending',
-      token: token,
-      createdAt: serverTimestamp() as Timestamp,
-      expiresAt: Timestamp.fromDate(
-        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
-      ),
-    };
-    
-    await setDoc(doc(db, 'invitations', invitationId), invitation);
-    
-    return token;
+static async createInvitation(data: {
+  organizationId: string;
+  email: string;
+  role: 'manager' | 'employee';
+  invitedBy: string;
+  invitedByName: string;
+  firstName?: string;
+  lastName?: string;
+  department?: string;
+  managerId?: string;
+}): Promise<string> {
+  // Check if invitation already exists for this email in this org
+  const existingInvite = await this.getActiveInvitationByEmail(
+    data.organizationId, 
+    data.email
+  );
+  
+  if (existingInvite) {
+    throw new Error("An invitation has already been sent to this email address");
   }
+  
+  // Check if user already exists in organization
+  const existingUser = await this.checkUserExists(data.organizationId, data.email);
+  if (existingUser) {
+    throw new Error("A user with this email already exists in your organization");
+  }
+  
+  const invitationId = doc(collection(db, 'invitations')).id;
+  const token = this.generateToken();
+  
+  // FIXED: Filter out undefined values before creating the invitation object
+  const invitation: Omit<Invitation, 'id'> = {
+    organizationId: data.organizationId,
+    email: data.email.toLowerCase(),
+    role: data.role,
+    invitedBy: data.invitedBy,
+    invitedByName: data.invitedByName,
+    status: 'pending',
+    token: token,
+    createdAt: serverTimestamp() as Timestamp,
+    expiresAt: Timestamp.fromDate(
+      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+    ),
+    // Only include optional fields if they have values
+    ...(data.firstName && { firstName: data.firstName }),
+    ...(data.lastName && { lastName: data.lastName }),
+    ...(data.department && { department: data.department }),
+    ...(data.managerId && { managerId: data.managerId }),
+  };
+  
+  await setDoc(doc(db, 'invitations', invitationId), invitation);
+  
+  return token;
+}
   
   // Get invitation by token
   static async getInvitationByToken(token: string): Promise<Invitation | null> {

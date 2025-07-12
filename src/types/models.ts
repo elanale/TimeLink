@@ -112,3 +112,95 @@ export interface Invitation {
   expiresAt: Timestamp;
   acceptedAt?: Timestamp;
 }
+
+// Enhanced TimeLog model for better querying and reporting
+export interface TimeLog {
+  id: string;
+  
+  // Organization & User info (for efficient querying)
+  organizationId: string;
+  userId: string;
+  userDisplayName: string;
+  department?: string;
+  
+  // Time tracking
+  clockIn: Timestamp;
+  clockOut?: Timestamp;
+  totalHours?: number; // Calculated field
+  
+  // Work details
+  clockInNote?: string;   // Daily plan
+  clockOutNote?: string;  // Work report
+  
+  // Metadata
+  date: string; // YYYY-MM-DD format for easy querying
+  status: 'active' | 'completed' | 'edited';
+  
+  // Location tracking (future feature)
+  clockInLocation?: {
+    latitude: number;
+    longitude: number;
+    address?: string;
+  };
+  clockOutLocation?: {
+    latitude: number;
+    longitude: number;
+    address?: string;
+  };
+  
+  // Admin fields
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  editedBy?: string; // userId who last edited
+  editReason?: string;
+}
+
+// For real-time user status tracking
+export interface UserStatus {
+  id: string; // userId
+  organizationId: string;
+  
+  // Current status
+  isActive: boolean;
+  currentStatus: 'clocked_out' | 'clocked_in' | 'break';
+  lastActivity: Timestamp;
+  
+  // Current session (if clocked in)
+  currentTimeLogId?: string;
+  clockedInAt?: Timestamp;
+  todaysPlan?: string;
+  
+  // Quick stats
+  todayHours: number;
+  weekHours: number;
+  
+  // Metadata
+  updatedAt: Timestamp;
+}
+
+// For weekly/monthly summaries
+export interface TimeSummary {
+  id: string; // userId-YYYY-MM-DD or userId-YYYY-WW format
+  
+  organizationId: string;
+  userId: string;
+  userDisplayName: string;
+  
+  // Time period
+  type: 'daily' | 'weekly' | 'monthly';
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+  
+  // Statistics
+  totalHours: number;
+  totalDays: number;
+  averageHoursPerDay: number;
+  overtimeHours: number;
+  
+  // Breakdown
+  regularHours: number;
+  breakTime: number;
+  
+  // Metadata
+  calculatedAt: Timestamp;
+}
