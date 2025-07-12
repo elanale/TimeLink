@@ -48,7 +48,8 @@ export class UserService {
     await setDoc(doc(db, 'users', firebaseUser.uid), user);
   }
   
-  // --- THIS METHOD IS UPDATED ---
+
+// --- THIS METHOD IS UPDATED ---
   static async createUserFromInvitation(
     firebaseUser: FirebaseUser,
     // CHANGE: The type is now PublicInvitationToken, not Invitation
@@ -59,6 +60,21 @@ export class UserService {
       phone?: string;
     }
   ): Promise<void> {
+    // Fetch the full invitation document to get department and managerId
+    let department: string | undefined;
+    let managerId: string | undefined;
+    
+    try {
+      const invitationDoc = await getDoc(doc(db, 'invitations', invitation.invitationId));
+      if (invitationDoc.exists()) {
+        const invitationData = invitationDoc.data();
+        department = invitationData.department;
+        managerId = invitationData.managerId;
+      }
+    } catch (error) {
+      console.error("Error fetching full invitation details:", error);
+    }
+    
     const user: Omit<User, 'id'> = {
       organizationId: invitation.organizationId,
       role: invitation.role,
@@ -67,10 +83,10 @@ export class UserService {
       firstName: additionalData.firstName,
       lastName: additionalData.lastName,
       displayName: `${additionalData.firstName} ${additionalData.lastName}`,
-      phone: additionalData.phone,
-      // CHANGE: These fields are no longer in the public token, so they are removed.
-      // department: invitation.department,
-      // managerId: invitation.managerId,
+      // Only include optional fields if they have values
+      ...(additionalData.phone && { phone: additionalData.phone }),
+      ...(department && { department: department }),
+      ...(managerId && { managerId: managerId }),
       isActive: true,
       emailVerified: firebaseUser.emailVerified,
       createdAt: serverTimestamp() as Timestamp,
@@ -86,7 +102,6 @@ export class UserService {
     
     await setDoc(doc(db, 'users', firebaseUser.uid), user);
   }
-  
   // getCurrentUser remains unchanged
   static async getCurrentUser(): Promise<(User & { organization?: Organization }) | null> { 
     if (!auth.currentUser) return null;
