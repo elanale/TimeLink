@@ -164,7 +164,7 @@ export default function EmploymentClock() {
             </p>
             {activeTimeLog.clockInNote && (
               <p>
-                <span className="font-medium">Today's plan:</span>{" "}
+                <span className="font-medium">Current Job:</span>{" "}
                 {activeTimeLog.clockInNote}
               </p>
             )}

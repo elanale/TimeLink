@@ -95,13 +95,19 @@ export class TimeTrackingService {
     const batch = writeBatch(db);
     
     // Update time log
-    batch.update(doc(db, 'timeLogs', activeLog.id), {
-      clockOut: Timestamp.fromDate(now),
-      clockOutNote: report,
-      totalHours: Math.round(totalHours * 100) / 100, // Round to 2 decimal places
-      status: 'completed',
-      updatedAt: serverTimestamp(),
-    });
+    const logUpdateData: any = {
+    clockOut: Timestamp.fromDate(now),
+    totalHours: Math.round(totalHours * 100) / 100,
+    status: 'completed',
+    updatedAt: serverTimestamp(),
+  };
+
+    if (report) {
+      logUpdateData.clockOutNote = report;
+    }
+
+    batch.update(doc(db, 'timeLogs', activeLog.id), logUpdateData);
+
     
     // Update user status
     const dateStr = now.toISOString().split('T')[0];
