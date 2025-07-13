@@ -1,6 +1,8 @@
 // src/routes/__root.tsx
 
 import { createRootRoute, Outlet } from "@tanstack/react-router";
+import "./finishSignUp";
+
 
 // Import your site-wide components and the AuthProvider
 import Footer from "@/components/Footer";

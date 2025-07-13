@@ -10,8 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ManagerDashRouteImport } from './routes/managerDash'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InviteRouteImport } from './routes/invite'
+import { Route as FinishSignUpRouteImport } from './routes/finishSignUp'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AcceptInvitationRouteImport } from './routes/accept-invitation'
 import { Route as IndexRouteImport } from './routes/index'
@@ -19,6 +21,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManagerDashRoute = ManagerDashRouteImport.update({
+  id: '/managerDash',
+  path: '/managerDash',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -29,6 +36,11 @@ const LoginRoute = LoginRouteImport.update({
 const InviteRoute = InviteRouteImport.update({
   id: '/invite',
   path: '/invite',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinishSignUpRoute = FinishSignUpRouteImport.update({
+  id: '/finishSignUp',
+  path: '/finishSignUp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -51,16 +63,20 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accept-invitation': typeof AcceptInvitationRoute
   '/dashboard': typeof DashboardRoute
+  '/finishSignUp': typeof FinishSignUpRoute
   '/invite': typeof InviteRoute
   '/login': typeof LoginRoute
+  '/managerDash': typeof ManagerDashRoute
   '/signup': typeof SignupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accept-invitation': typeof AcceptInvitationRoute
   '/dashboard': typeof DashboardRoute
+  '/finishSignUp': typeof FinishSignUpRoute
   '/invite': typeof InviteRoute
   '/login': typeof LoginRoute
+  '/managerDash': typeof ManagerDashRoute
   '/signup': typeof SignupRoute
 }
 export interface FileRoutesById {
@@ -68,8 +84,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/accept-invitation': typeof AcceptInvitationRoute
   '/dashboard': typeof DashboardRoute
+  '/finishSignUp': typeof FinishSignUpRoute
   '/invite': typeof InviteRoute
   '/login': typeof LoginRoute
+  '/managerDash': typeof ManagerDashRoute
   '/signup': typeof SignupRoute
 }
 export interface FileRouteTypes {
@@ -78,24 +96,30 @@ export interface FileRouteTypes {
     | '/'
     | '/accept-invitation'
     | '/dashboard'
+    | '/finishSignUp'
     | '/invite'
     | '/login'
+    | '/managerDash'
     | '/signup'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/accept-invitation'
     | '/dashboard'
+    | '/finishSignUp'
     | '/invite'
     | '/login'
+    | '/managerDash'
     | '/signup'
   id:
     | '__root__'
     | '/'
     | '/accept-invitation'
     | '/dashboard'
+    | '/finishSignUp'
     | '/invite'
     | '/login'
+    | '/managerDash'
     | '/signup'
   fileRoutesById: FileRoutesById
 }
@@ -103,8 +127,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AcceptInvitationRoute: typeof AcceptInvitationRoute
   DashboardRoute: typeof DashboardRoute
+  FinishSignUpRoute: typeof FinishSignUpRoute
   InviteRoute: typeof InviteRoute
   LoginRoute: typeof LoginRoute
+  ManagerDashRoute: typeof ManagerDashRoute
   SignupRoute: typeof SignupRoute
 }
 
@@ -115,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/managerDash': {
+      id: '/managerDash'
+      path: '/managerDash'
+      fullPath: '/managerDash'
+      preLoaderRoute: typeof ManagerDashRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -129,6 +162,13 @@ declare module '@tanstack/react-router' {
       path: '/invite'
       fullPath: '/invite'
       preLoaderRoute: typeof InviteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/finishSignUp': {
+      id: '/finishSignUp'
+      path: '/finishSignUp'
+      fullPath: '/finishSignUp'
+      preLoaderRoute: typeof FinishSignUpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -159,8 +199,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AcceptInvitationRoute: AcceptInvitationRoute,
   DashboardRoute: DashboardRoute,
+  FinishSignUpRoute: FinishSignUpRoute,
   InviteRoute: InviteRoute,
   LoginRoute: LoginRoute,
+  ManagerDashRoute: ManagerDashRoute,
   SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport

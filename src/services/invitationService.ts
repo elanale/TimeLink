@@ -37,7 +37,7 @@ export class InvitationService {
     lastName?: string;
     department?: string;
     managerId?: string;
-  }): Promise<string> {
+  }): Promise<{ token: string; link: string }> {
     const existingInvite = await this.getActiveInvitationByEmail(data.organizationId, data.email);
     if (existingInvite) {
       throw new Error("An active invitation has already been sent to this email address.");
@@ -85,7 +85,8 @@ export class InvitationService {
     batch.set(doc(db, 'invitations', invitationId), invitation);
 
     await batch.commit();
-    return token;
+    const link = `${window.location.origin}/finishSignUp?token=${token}`;
+    return { token, link };
   }
 
   // In src/services/invitationService.ts

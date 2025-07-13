@@ -1,5 +1,5 @@
 // src/routes/invite.tsx
-
+import { getAuth, sendSignInLinkToEmail } from "firebase/auth";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthContext";
@@ -92,29 +92,40 @@ function InvitePage() {
     setError("");
     setSuccess("");
     setIsSubmitting(true);
+    const auth = getAuth();
 
     try {
-      const token = await InvitationService.createInvitation({
-        organizationId: profile!.organizationId,
-        email,
-        role,
-        invitedBy: user!.uid,
-        invitedByName: profile!.displayName || profile!.email,
-        firstName: firstName || undefined,
-        lastName: lastName || undefined,
-        department: department || undefined,
-        managerId: role === 'employee' ? (selectedManagerId || profile!.id) : undefined,
-      });
+      const { token, link } = await InvitationService.createInvitation({
+      organizationId: profile!.organizationId,
+      email,
+      role,
+      invitedBy: user!.uid,
+      invitedByName: profile!.displayName || profile!.email,
+      firstName: firstName || undefined,
+      lastName: lastName || undefined,
+      department: department || undefined,
+      managerId: role === 'employee' ? (selectedManagerId || profile!.id) : undefined,
+    });
 
-      const inviteLink = InvitationService.buildInvitationLink(token);
+    // Save email locally to complete sign-in later (optional but recommended)
+    window.localStorage.setItem('emailForSignIn', email);
+
+    const actionCodeSettings = {
+      url: `${window.location.origin}/finishSignUp?token=${token}&email=${encodeURIComponent(email)}`,
+      handleCodeInApp: true,
+    };
+
+    // Send actual email
+    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+
       
       setSuccess(`Invitation sent successfully! Share this link with ${email}:`);
       
       // In a real app, you'd send an email here
-      console.log("Invitation link:", inviteLink);
+      console.log("Invitation link:", link);
       
       // Show the link to copy
-      navigator.clipboard.writeText(inviteLink);
+      navigator.clipboard.writeText(link);
       setSuccess(`Invitation link copied to clipboard! The link expires in 7 days.`);
       
       // Reset form
