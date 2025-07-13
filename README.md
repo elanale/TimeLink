@@ -179,9 +179,11 @@ timelink/
 │   │   └── firebase.ts            # Firebase configuration
 │   ├── routes/                    # File-based routing
 │   │   ├── __root.tsx             # Root layout with navigation
+│   │   ├── finishSignUp.tsx       # Allows user to sign up through email link
 │   │   ├── index.tsx              # Landing page
 │   │   ├── login.tsx              # Authentication
 │   │   ├── signup.tsx             # Organization registration
+│   │   ├── createJobs.tsx         # Job creation route 
 │   │   ├── dashboard.tsx          # Role-based dashboard
 │   │   ├── invite.tsx             # Team member invitation
 │   │   └── accept-invitation.tsx  # Invitation acceptance
@@ -190,6 +192,7 @@ timelink/
 │   │   ├── userService.ts         # User management
 │   │   ├── organizationService.ts # Organization operations
 │   │   └── invitationService.ts   # Invitation system
+│   │   └── createJobService.ts    # Allows Admin/Managers to add Jobs
 │   ├── types/                     # TypeScript definitions
 │   │   ├── models.ts              # Core data models
 │   │   └── index.ts               # Type exports
@@ -324,6 +327,16 @@ invitations/{inviteId}
 └── metadata...
 ```
 
+#### Jobs
+```typescript
+  jobs/{jobId}
+├── organizationId: string
+├── jobNumber: string
+├── jobName: string
+├── createdBy: string
+├── createdAt: timestamp
+```
+
 ## 🔐 Security Implementation
 
 ### Firebase Security Rules
@@ -357,6 +370,7 @@ Password: admin123
 - Full user management
 - Complete time tracking
 - Manager and employee invitations
+- Job Creation
 ```
 
 #### 2. Manager Workflow  
@@ -380,7 +394,7 @@ Password: employee123
 
 # Test employee features:
 - Personal time tracking
-- Daily planning and reporting
+- Clock in/out of Job
 - Restricted navigation
 - No administrative access
 ```
