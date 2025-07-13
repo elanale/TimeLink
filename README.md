@@ -329,13 +329,23 @@ invitations/{inviteId}
 
 #### Jobs
 ```typescript
-  jobs/{jobId}
-├── organizationId: string
-├── jobNumber: string
-├── jobName: string
-├── createdBy: string
-├── createdAt: timestamp
+  jobs/{jobId}    
+├── organizationId: string           // Organization ID of Job
+├── jobNumber: string                // Job ID number for easy tracking
+├── jobName: string                  // Job name for admin to easily remember
+├── createdBy: string                // Manager that created the Job
+├── createdAt: timestamp             // Time the Job was created
 ```
+
+## ✅ New Features Summary
+- Job creation form at /createJobs
+- Job number field in clock-in modal
+- Verification of job number on clock-in
+- Removed clock-out notes field entirely
+- Used logged-in user’s organizationId automatically
+- Fixed undefined Firestore write errors
+- Inviting Users sends e-mail
+- Invitation Link sets up new user
 
 ## 🔐 Security Implementation
 
