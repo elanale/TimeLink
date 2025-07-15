@@ -131,7 +131,7 @@ function SignupPage() {
         }
       );
 
-      // // 5. Wait 1 second before signing out
+      // // 5. Waait 1 second before signing out
       // await new Promise((res) => setTimeout(res, 500));
 
       // 6. Sign out the newly created user
