@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Redirecting to App...</title>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const oobCode = params.get("oobCode");
+      if (oobCode) {
+        window.location.href = `myapp://verify?oobCode=${oobCode}`;
+      } else {
+        document.body.textContent = "Invalid verification link.";
+      }
+    </script>
+  </head>
+  <body>
+    Redirecting to TimeLink desktop app...
+  </body>
+</html>
