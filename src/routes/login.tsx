@@ -119,6 +119,7 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [showResend, setShowResend] = useState(false);
 
   // TEMPORARY: Skip email verification check for testing
@@ -179,14 +180,36 @@ function LoginPage() {
           className="w-full p-2 rounded border dark:bg-gray-700 dark:text-white"
         />
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="w-full p-2 rounded border dark:bg-gray-700 dark:text-white"
-        />
+        <div className="relative">
+          <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              className="
+              w-full p-2 pr-10 rounded border dark:bg-gray-700 dark:text-white
+              appearance-none
+              [&::-ms-reveal]:hidden [&::-ms-clear]:hidden
+              [&::-webkit-textfield-decoration-container]:hidden
+              [&::-webkit-clear-button]:hidden
+              [&::-webkit-credentials-auto-fill-button]:hidden
+              [&::-webkit-contacts-auto-fill-button]:hidden
+              "
+          />
+          <button
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              onClick={() => setShowPassword(p => !p)}
+              onMouseDown={(e) => e.preventDefault()}
+              className="absolute inset-y-0 right-2 flex items-center text-sm text-gray-500 dark:text-gray-300"
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        </div>
 
         {error && (
           <div className="text-sm text-red-500 space-y-2">
