@@ -33,8 +33,8 @@ TimeLink is designed as a complete SaaS solution supporting multiple organizatio
 
 ### User Roles & Permissions
 | Feature | Employee | Manager | Admin |
-|---------|----------|---------|-------|
-| Time Tracking | ✅ | ✅ | ✅ |
+|---------|----------|--------|------|
+| Time Tracking | ✅ | ❌ | ❌ |
 | View Own Logs | ✅ | ✅ | ✅ |
 | Team Status View | ❌ | ✅ | ✅ |
 | Invite Users | ❌ | ✅ | ✅ |

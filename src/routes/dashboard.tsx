@@ -94,8 +94,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Employee View (Always visible for all roles) */}
-        <EmploymentClock />
+        {/* Employee Clock View (Visible for Employees only) */}
+        {!(isManager) && <EmploymentClock />}
 
         {/* Manager View (Renders for Managers and Admins) */}
         {isManager && <TeamStatusView />}
