@@ -48,7 +48,8 @@ export default function EmploymentClock() {
     loadUserData();
   }, [user, profile]);
 
-  const handleClockIn = async (plan?: string) => {
+
+const handleClockIn = async (plan?: string, jobId?: string, jobNumber?: string, jobName?: string) => {
     if (!user || !profile) return;
     
     try {
@@ -58,7 +59,10 @@ export default function EmploymentClock() {
         profile.organizationId,
         profile.displayName || profile.email,
         plan,
-        profile.department
+        profile.department,
+        jobId,
+        jobNumber,
+        jobName
       );
       
       // Reload data to reflect changes
@@ -90,10 +94,18 @@ export default function EmploymentClock() {
     }
   };
 
-  const handleReportSave = async (payload: { plan?: string; report?: string }) => {
+
+  const handleReportSave = async (payload: { 
+    plan?: string; 
+    report?: string; 
+    jobId?: string;
+    jobNumber?: string;
+    jobName?: string;
+  }) => {
     try {
       if (reportMode === "in") {
-        await handleClockIn(payload.plan);
+        // Pass all job details to the new handleClockIn function
+        await handleClockIn(payload.plan, payload.jobId, payload.jobNumber, payload.jobName);
       } else {
         await handleClockOut(payload.report);
       }

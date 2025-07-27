@@ -12,8 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as InviteRouteImport } from './routes/invite'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CreateJobsRouteImport } from './routes/createJobs'
 import { Route as AcceptInvitationRouteImport } from './routes/accept-invitation'
 import { Route as ClockRouteImport } from './routes/Clock'
 import { Route as IndexRouteImport } from './routes/index'
@@ -33,6 +35,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JobsRoute = JobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InviteRoute = InviteRouteImport.update({
   id: '/invite',
   path: '/invite',
@@ -41,6 +48,11 @@ const InviteRoute = InviteRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreateJobsRoute = CreateJobsRouteImport.update({
+  id: '/createJobs',
+  path: '/createJobs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AcceptInvitationRoute = AcceptInvitationRouteImport.update({
@@ -63,8 +75,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/Clock': typeof ClockRoute
   '/accept-invitation': typeof AcceptInvitationRoute
+  '/createJobs': typeof CreateJobsRoute
   '/dashboard': typeof DashboardRoute
   '/invite': typeof InviteRoute
+  '/jobs': typeof JobsRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/verify': typeof VerifyRoute
@@ -73,8 +87,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/Clock': typeof ClockRoute
   '/accept-invitation': typeof AcceptInvitationRoute
+  '/createJobs': typeof CreateJobsRoute
   '/dashboard': typeof DashboardRoute
   '/invite': typeof InviteRoute
+  '/jobs': typeof JobsRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/verify': typeof VerifyRoute
@@ -84,8 +100,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/Clock': typeof ClockRoute
   '/accept-invitation': typeof AcceptInvitationRoute
+  '/createJobs': typeof CreateJobsRoute
   '/dashboard': typeof DashboardRoute
   '/invite': typeof InviteRoute
+  '/jobs': typeof JobsRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/verify': typeof VerifyRoute
@@ -96,8 +114,10 @@ export interface FileRouteTypes {
     | '/'
     | '/Clock'
     | '/accept-invitation'
+    | '/createJobs'
     | '/dashboard'
     | '/invite'
+    | '/jobs'
     | '/login'
     | '/signup'
     | '/verify'
@@ -106,8 +126,10 @@ export interface FileRouteTypes {
     | '/'
     | '/Clock'
     | '/accept-invitation'
+    | '/createJobs'
     | '/dashboard'
     | '/invite'
+    | '/jobs'
     | '/login'
     | '/signup'
     | '/verify'
@@ -116,8 +138,10 @@ export interface FileRouteTypes {
     | '/'
     | '/Clock'
     | '/accept-invitation'
+    | '/createJobs'
     | '/dashboard'
     | '/invite'
+    | '/jobs'
     | '/login'
     | '/signup'
     | '/verify'
@@ -127,8 +151,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ClockRoute: typeof ClockRoute
   AcceptInvitationRoute: typeof AcceptInvitationRoute
+  CreateJobsRoute: typeof CreateJobsRoute
   DashboardRoute: typeof DashboardRoute
   InviteRoute: typeof InviteRoute
+  JobsRoute: typeof JobsRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   VerifyRoute: typeof VerifyRoute
@@ -157,6 +183,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/jobs': {
+      id: '/jobs'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof JobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/invite': {
       id: '/invite'
       path: '/invite'
@@ -169,6 +202,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/createJobs': {
+      id: '/createJobs'
+      path: '/createJobs'
+      fullPath: '/createJobs'
+      preLoaderRoute: typeof CreateJobsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/accept-invitation': {
@@ -199,8 +239,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ClockRoute: ClockRoute,
   AcceptInvitationRoute: AcceptInvitationRoute,
+  CreateJobsRoute: CreateJobsRoute,
   DashboardRoute: DashboardRoute,
   InviteRoute: InviteRoute,
+  JobsRoute: JobsRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   VerifyRoute: VerifyRoute,

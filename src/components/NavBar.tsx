@@ -36,13 +36,19 @@ export default function NavBar() {
             </li>
           )}
 
-          {/* NEW: Invite link for managers and admins */}
           {user && (isManager || isAdmin) && (
-            <li>
-              <Link to="/invite" className="hover:text-blue-500 dark:hover:text-blue-300 transition">
-                Invite Users
-              </Link>
-            </li>
+            <>
+              <li>
+                <Link to="/jobs" className="hover:text-blue-500 dark:hover:text-blue-300 transition">
+                  Jobs
+                </Link>
+              </li>
+              <li>
+                <Link to="/invite" className="hover:text-blue-500 dark:hover:text-blue-300 transition">
+                  Invite Users
+                </Link>
+              </li>
+            </>
           )}
 
           {!user && (

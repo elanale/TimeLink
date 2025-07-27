@@ -122,6 +122,10 @@ export interface TimeLog {
   userId: string;
   userDisplayName: string;
   department?: string;
+  jobId?: string;
+  jobNumber?: string;
+  jobName?: string;
+
   
   // Time tracking
   clockIn: Timestamp;
@@ -203,6 +207,47 @@ export interface TimeSummary {
   
   // Metadata
   calculatedAt: Timestamp;
+}
+
+export interface Job {
+  id: string;
+  organizationId: string;
+  
+  // Basic info
+  jobNumber: string;
+  jobName: string;
+  description?: string;
+  
+  // Status tracking
+  status: 'active' | 'completed' | 'cancelled' | 'paused';
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  
+  // Time estimates
+  estimatedHours?: number;
+  actualHours?: number; // Calculated from time logs
+  
+  // Assignment
+  assignedEmployees?: string[]; // Array of userIds
+  department?: string;
+  
+  // Timestamps
+  createdAt: Timestamp;
+  createdBy: string; // userId
+  updatedAt: Timestamp;
+  startDate?: Timestamp;
+  dueDate?: Timestamp;
+  completedAt?: Timestamp;
+  completedBy?: string; // userId
+  
+  // Additional metadata
+  notes?: string;
+  tags?: string[];
+  clientName?: string;
+  location?: string;
+  
+  // Financial (optional)
+  budgetedCost?: number;
+  actualCost?: number; // Calculated from labor
 }
 
 export interface PublicInvitationToken {

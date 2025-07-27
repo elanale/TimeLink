@@ -28,7 +28,10 @@ export class TimeTrackingService {
     organizationId: string,
     userDisplayName: string,
     plan?: string,
-    department?: string
+    department?: string,
+    jobId?: string,
+    jobNumber?: string,
+    jobName?: string
   ): Promise<string> {
     // Check if user is already clocked in
     const activeLog = await this.getActiveTimeLog(userId);
@@ -45,6 +48,9 @@ export class TimeTrackingService {
       userId,
       userDisplayName,
       department,
+      jobId,
+      jobNumber,
+      jobName,
       clockIn: Timestamp.fromDate(now),
       clockInNote: plan,
       date: dateStr,
@@ -77,7 +83,6 @@ export class TimeTrackingService {
     await batch.commit();
     return timeLogId;
   }
-  
   // Clock Out - Complete time log entry
   static async clockOut(
     userId: string,
