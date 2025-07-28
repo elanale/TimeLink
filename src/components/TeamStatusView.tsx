@@ -21,9 +21,7 @@ interface Employee {
   department?: string;
   ManagedBy?: string; // Optional field for manager's name
 }
-
-const { profile } = useAuth();
-const currentManagerName = profile?.displayName || "";
+//here is a comment to test push
 
 export default function TeamStatusView() {
   const { profile } = useAuth();
