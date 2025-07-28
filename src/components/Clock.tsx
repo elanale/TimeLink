@@ -48,8 +48,7 @@ export default function EmploymentClock() {
     loadUserData();
   }, [user, profile]);
 
-
-const handleClockIn = async (plan?: string, jobId?: string, jobNumber?: string, jobName?: string) => {
+  const handleClockIn = async (plan?: string) => {
     if (!user || !profile) return;
     
     try {
@@ -59,10 +58,7 @@ const handleClockIn = async (plan?: string, jobId?: string, jobNumber?: string, 
         profile.organizationId,
         profile.displayName || profile.email,
         plan,
-        profile.department,
-        jobId,
-        jobNumber,
-        jobName
+        profile.department
       );
       
       // Reload data to reflect changes
@@ -94,18 +90,10 @@ const handleClockIn = async (plan?: string, jobId?: string, jobNumber?: string, 
     }
   };
 
-
-  const handleReportSave = async (payload: { 
-    plan?: string; 
-    report?: string; 
-    jobId?: string;
-    jobNumber?: string;
-    jobName?: string;
-  }) => {
+  const handleReportSave = async (payload: { plan?: string; report?: string }) => {
     try {
       if (reportMode === "in") {
-        // Pass all job details to the new handleClockIn function
-        await handleClockIn(payload.plan, payload.jobId, payload.jobNumber, payload.jobName);
+        await handleClockIn(payload.plan);
       } else {
         await handleClockOut(payload.report);
       }
@@ -176,7 +164,7 @@ const handleClockIn = async (plan?: string, jobId?: string, jobNumber?: string, 
             </p>
             {activeTimeLog.clockInNote && (
               <p>
-                <span className="font-medium">Today's plan:</span>{" "}
+                <span className="font-medium">Current Job:</span>{" "}
                 {activeTimeLog.clockInNote}
               </p>
             )}

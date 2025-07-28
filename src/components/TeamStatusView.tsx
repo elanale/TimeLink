@@ -1,17 +1,130 @@
-// src/components/TeamStatusView.tsx
-import React from 'react';
+import { useEffect, useState } from "react";
+import { getDocs, collection, query, where } from "firebase/firestore";
+import { db } from "@/components/firebase";
+import { useAuth } from "@/components/AuthContext";
+import { TimeTrackingService } from "@/services/timeTrackingService";
+import type { UserStatus } from "@/types/models";
 
-const TeamStatusView: React.FC = () => {
+interface EnrichedEmployee extends Employee {
+  weekHours: number;
+  status: string;
+  currentJob: string;
+}
+
+interface Employee {
+  id: string;
+  displayName?: string;
+  email: string;
+  role: "employee" | "manager" | "admin";
+  managerId?: string;
+  organizationId: string;
+  department?: string;
+  ManagedBy?: string; // Optional field for manager's name
+}
+
+const { profile } = useAuth();
+const currentManagerName = profile?.displayName || "";
+
+export default function TeamStatusView() {
+  const { profile } = useAuth();
+  const [employees, setEmployees] = useState<EnrichedEmployee[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      if (!profile) return;
+
+      setLoading(true);
+      try {
+        const q = query(
+          collection(db, "users"),
+          where("organizationId", "==", profile.organizationId),
+          where("role", "==", "employee")
+        );
+
+        const snapshot = await getDocs(q);
+        const baseEmployees: Employee[] = snapshot.docs.map((doc) => ({
+          ...(doc.data() as Employee),
+          id: doc.id,
+        }));
+
+        // Load status info in parallel
+        const enriched = await Promise.all(
+          baseEmployees.map(async (emp) => {
+            try {
+              const status = await TimeTrackingService.getUserStatus(emp.id);
+              return {
+                ...emp,
+                weekHours: status?.weekHours || 0,
+                status: status?.currentStatus || "clocked_out",
+                currentJob: status?.todaysPlan || "--",
+              };
+            } catch {
+              return {
+                ...emp,
+                weekHours: 0,
+                status: "clocked_out",
+                currentJob: "--",
+              };
+            }
+          })
+        );
+
+        const filtered = enriched.filter(emp => emp.ManagedBy === "Sarah Johnson");
+        setEmployees(filtered);
+      } catch (err) {
+        console.error("Error fetching employees:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmployees();
+  }, [profile]);
+
   return (
-    <div className="p-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-      <h2 className="text-2xl font-semibold text-gray-800 dark:text-white">
-        Team Status
-      </h2>
-      <p className="mt-2 text-gray-600 dark:text-gray-400">
-        A real-time overview of your team's clock-in status and daily plans will appear here.
-      </p>
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-4">Team Status</h2>
+      {loading ? (
+        <p>Loading...</p>
+      ) : employees.length === 0 ? (
+        <p>No employees found.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white dark:bg-gray-800 rounded-md">
+            <thead className="bg-gray-100 dark:bg-gray-700">
+              <tr>
+                <th className="px-4 py-2 text-left text-sm">Name</th>
+                <th className="px-4 py-2 text-left text-sm">Managed By</th>
+                <th className="px-4 py-2 text-left text-sm">Hours This Week</th>
+                <th className="px-4 py-2 text-left text-sm">Status</th>
+                <th className="px-4 py-2 text-left text-sm">Current Job</th>
+              </tr>
+            </thead>
+            <tbody>
+              {employees.map((emp) => (
+                <tr key={emp.id} className="border-b border-gray-200 dark:border-gray-600">
+                  <td className="px-4 py-2">{emp.displayName || emp.email}</td>
+                  <td className="px-4 py-2">{emp.ManagedBy || "--"}</td>
+                  <td className="px-4 py-2">{emp.weekHours.toFixed(1)}h</td>
+                  <td className="px-4 py-2">
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full font-medium ${
+                        emp.status === "clocked_in"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-200 text-gray-700"
+                      }`}
+                    >
+                      {emp.status === "clocked_in" ? "Clocked In" : "Clocked Out"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2">{emp.currentJob}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
-};
-
-export default TeamStatusView;
+}

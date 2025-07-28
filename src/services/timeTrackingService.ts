@@ -28,10 +28,7 @@ export class TimeTrackingService {
     organizationId: string,
     userDisplayName: string,
     plan?: string,
-    department?: string,
-    jobId?: string,
-    jobNumber?: string,
-    jobName?: string
+    department?: string
   ): Promise<string> {
     // Check if user is already clocked in
     const activeLog = await this.getActiveTimeLog(userId);
@@ -48,9 +45,6 @@ export class TimeTrackingService {
       userId,
       userDisplayName,
       department,
-      jobId,
-      jobNumber,
-      jobName,
       clockIn: Timestamp.fromDate(now),
       clockInNote: plan,
       date: dateStr,
@@ -83,6 +77,7 @@ export class TimeTrackingService {
     await batch.commit();
     return timeLogId;
   }
+  
   // Clock Out - Complete time log entry
   static async clockOut(
     userId: string,
@@ -100,13 +95,19 @@ export class TimeTrackingService {
     const batch = writeBatch(db);
     
     // Update time log
-    batch.update(doc(db, 'timeLogs', activeLog.id), {
-      clockOut: Timestamp.fromDate(now),
-      clockOutNote: report,
-      totalHours: Math.round(totalHours * 100) / 100, // Round to 2 decimal places
-      status: 'completed',
-      updatedAt: serverTimestamp(),
-    });
+    const logUpdateData: any = {
+    clockOut: Timestamp.fromDate(now),
+    totalHours: Math.round(totalHours * 100) / 100,
+    status: 'completed',
+    updatedAt: serverTimestamp(),
+  };
+
+    if (report) {
+      logUpdateData.clockOutNote = report;
+    }
+
+    batch.update(doc(db, 'timeLogs', activeLog.id), logUpdateData);
+
     
     // Update user status
     const dateStr = now.toISOString().split('T')[0];
