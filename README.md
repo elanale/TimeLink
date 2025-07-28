@@ -10,10 +10,20 @@ A cross-platform desktop time-tracking SaaS application built with Tauri, React,
 - **Multi-Tenant Architecture**: Complete organization isolation with secure data access
 - **Role-Based Access Control**: Admin, Manager, and Employee roles with granular permissions
 - **Enhanced Time Tracking**: Clock in/out with daily planning and work reports
+- **Job Management System**: Create, track, and complete jobs with time and cost tracking
 - **Team Management**: Invitation system for onboarding team members
 - **Real-Time Status**: Live tracking of team member clock-in status
 - **Advanced Reporting**: Historical time logs with filtering and analytics
 - **Cross-Platform**: Works on Windows, macOS, and Linux
+
+### Job Management Features
+- **Comprehensive Job Creation**: Track jobs with detailed information including client, location, and priority
+- **Job Status Tracking**: Active, completed, cancelled, and paused states
+- **Time & Cost Estimation**: Compare estimated vs actual hours and costs
+- **Job Assignment**: Link employees to specific jobs
+- **Real-time Updates**: See job progress and hours logged in real-time
+- **Quick Actions**: Complete or cancel jobs with notes
+- **Job Dashboard**: Overview statistics and filtering capabilities
 
 ### Authentication & Security
 - **Secure Authentication**: Email/password authentication with Firebase
@@ -38,13 +48,17 @@ TimeLink is designed as a complete SaaS solution supporting multiple organizatio
 | View Own Logs | ✅ | ✅ | ✅ |
 | Team Status View | ❌ | ✅ | ✅ |
 | Invite Users | ❌ | ✅ | ✅ |
+| Job Management | View Only | ✅ | ✅ |
+| Create/Edit Jobs | ❌ | ✅ | ✅ |
+| Complete/Cancel Jobs | ❌ | ✅ | ✅ |
 | Organization Settings | ❌ | ❌ | ✅ |
 | User Management | ❌ | Limited | ✅ |
 
 ### Data Architecture
 - **Organizations**: Multi-tenant isolation with independent data
 - **Users**: Role-based permissions and organizational membership
-- **Time Logs**: Flat collection structure for efficient querying
+- **Jobs**: Project/task tracking with status, assignments, and time tracking
+- **Time Logs**: Flat collection structure for efficient querying with job linkage
 - **User Status**: Real-time tracking of team activity
 - **Invitations**: Secure token-based team onboarding
 
@@ -86,7 +100,7 @@ Email: ilan_danial+manager@outlook.com
 Password: manager123
 Name: Sarah Johnson
 Department: Operations
-Permissions: Team management, user invitations, time tracking
+Permissions: Team management, user invitations, job management, time tracking
 
 👷 EMPLOYEE ACCOUNT
 Email: ilan_danial+employee@outlook.com  
@@ -94,13 +108,13 @@ Password: employee123
 Name: Mike Wilson
 Department: Operations
 Manager: Sarah Johnson
-Permissions: Time tracking only
+Permissions: Time tracking only, job selection required
 ```
 
 #### Testing Different Roles
-1. **Admin Testing**: Full organization management, user creation, settings
-2. **Manager Testing**: Team oversight, employee invitations, time tracking
-3. **Employee Testing**: Personal time tracking, daily planning, work reports
+1. **Admin Testing**: Full organization management, job creation/management, user creation, settings
+2. **Manager Testing**: Team oversight, job management, employee invitations, time tracking supervision
+3. **Employee Testing**: Personal time tracking with job selection, daily planning, work reports
 
 ### Email Alias Strategy
 The test accounts use email aliases (`+manager`, `+employee`) which:
@@ -159,9 +173,10 @@ bun run tauri build
 
 ### 5. Test the Application
 1. **Start with Admin**: Use ilan_danial@outlook.com to explore all features
-2. **Create Organizations**: Test the full signup flow
+2. **Create Jobs**: Test the job creation and management flow
 3. **Invite Team Members**: Use the invitation system
-4. **Test Role Permissions**: Verify different access levels
+4. **Test Time Tracking**: Clock in/out with job selection
+5. **Test Role Permissions**: Verify different access levels
 
 ## 📁 Enhanced Project Structure
 
@@ -170,9 +185,9 @@ timelink/
 ├── src/                           # React application source
 │   ├── components/                # Reusable UI components
 │   │   ├── AuthContext.tsx        # Authentication state management
-│   │   ├── NavBar.tsx             # Role-based navigation
-│   │   ├── Clock.tsx              # Enhanced time tracking
-│   │   ├── WorkReport.tsx         # Daily planning modal
+│   │   ├── NavBar.tsx             # Role-based navigation with Jobs link
+│   │   ├── Clock.tsx              # Enhanced time tracking with job display
+│   │   ├── WorkReport.tsx         # Clock in/out modal with job selection
 │   │   ├── TeamStatusView.tsx     # Manager team overview
 │   │   ├── OrgSettingsView.tsx    # Admin organization settings
 │   │   ├── Footer.tsx             # Application footer
@@ -183,18 +198,19 @@ timelink/
 │   │   ├── index.tsx              # Landing page
 │   │   ├── login.tsx              # Authentication
 │   │   ├── signup.tsx             # Organization registration
-│   │   ├── createJobs.tsx         # Job creation route 
+│   │   ├── jobs.tsx               # Job management dashboard
+│   │   ├── createJobs.tsx         # Enhanced job creation form
 │   │   ├── dashboard.tsx          # Role-based dashboard
 │   │   ├── invite.tsx             # Team member invitation
 │   │   └── accept-invitation.tsx  # Invitation acceptance
 │   ├── services/                  # Business logic services
-│   │   ├── timeTrackingService.ts # Time tracking operations
+│   │   ├── timeTrackingService.ts # Time tracking with job support
 │   │   ├── userService.ts         # User management
 │   │   ├── organizationService.ts # Organization operations
-│   │   └── invitationService.ts   # Invitation system
-│   │   └── createJobService.ts    # Allows Admin/Managers to add Jobs
+│   │   ├── invitationService.ts   # Invitation system
+│   │   └── jobService.ts          # Complete job management service
 │   ├── types/                     # TypeScript definitions
-│   │   ├── models.ts              # Core data models
+│   │   ├── models.ts              # Core data models including Job type
 │   │   └── index.ts               # Type exports
 │   ├── utils/                     # Utility functions
 │   └── main.tsx                   # Application entry point
@@ -275,11 +291,41 @@ users/{userId}
 ├── displayName: string             // Full display name
 ├── department?: string             // Work department
 ├── managerId?: string              // Direct manager
+├── hourlyRate?: number             // For wage calculations
 ├── permissions: {                  // Granular permissions
 │   canInviteEmployees: boolean
 │   canEditTimeLogs: boolean
+│   canManageJobs: boolean
 │   └── ...
 └── metadata...
+```
+
+#### Jobs
+```typescript
+jobs/{jobId}
+├── organizationId: string          // Organization ID
+├── jobNumber: string               // Unique job identifier
+├── jobName: string                 // Descriptive name
+├── description?: string            // Detailed description
+├── status: 'active'|'completed'|'cancelled'|'paused'
+├── priority?: 'low'|'medium'|'high'|'urgent'
+├── estimatedHours?: number         // Time estimate
+├── actualHours?: number            // Calculated from logs
+├── assignedEmployees?: string[]    // Array of userIds
+├── department?: string             // Associated department
+├── createdAt: timestamp            // Creation time
+├── createdBy: string               // Creator userId
+├── updatedAt: timestamp            // Last update
+├── startDate?: timestamp           // Job start date
+├── dueDate?: timestamp             // Job deadline
+├── completedAt?: timestamp         // Completion time
+├── completedBy?: string            // Completer userId
+├── clientName?: string             // Client information
+├── location?: string               // Job location
+├── notes?: string                  // Additional notes
+├── tags?: string[]                 // Categorization tags
+├── budgetedCost?: number           // Cost estimate
+└── actualCost?: number             // Calculated cost
 ```
 
 #### Time Logs
@@ -288,10 +334,12 @@ timeLogs/{logId}
 ├── organizationId: string          // For org-wide queries
 ├── userId: string                  // Log owner
 ├── userDisplayName: string         // For easy display
+├── jobId?: string                  // Linked job ID
+├── jobNumber?: string              // Job identifier
+├── jobName?: string                // Job name for display
 ├── clockIn: timestamp              // Start time
 ├── clockOut?: timestamp            // End time (if completed)
 ├── clockInNote?: string            // Daily plan
-├── clockOutNote?: string           // Work report
 ├── date: string                    // "YYYY-MM-DD" for querying
 ├── status: 'active'|'completed'    // Log status
 ├── totalHours?: number             // Calculated duration
@@ -327,25 +375,29 @@ invitations/{inviteId}
 └── metadata...
 ```
 
-#### Jobs
-```typescript
-  jobs/{jobId}    
-├── organizationId: string           // Organization ID of Job
-├── jobNumber: string                // Job ID number for easy tracking
-├── jobName: string                  // Job name for admin to easily remember
-├── createdBy: string                // Manager that created the Job
-├── createdAt: timestamp             // Time the Job was created
-```
-
 ## ✅ New Features Summary
-- Job creation form at /createJobs
-- Job number field in clock-in modal
-- Verification of job number on clock-in
-- Removed clock-out notes field entirely
-- Used logged-in user’s organizationId automatically
-- Fixed undefined Firestore write errors
-- Inviting Users sends e-mail
-- Invitation Link sets up new user
+- **Enhanced Job Management System**
+  - Comprehensive job creation with client, location, priority, and time estimates
+  - Job dashboard with statistics and filtering
+  - Quick actions to complete or cancel jobs
+  - Real-time job hour and cost tracking
+- **Time Tracking Integration**
+  - Employees must select a job when clocking in
+  - Job information displayed in time logs
+  - Active session shows current job details
+- **Job Service API**
+  - Full CRUD operations for jobs
+  - Automatic hour and cost calculations
+  - Job assignment management
+  - Statistics and reporting
+- **UI Enhancements**
+  - Jobs navigation for managers/admins
+  - Enhanced clock-in modal with job selection
+  - Job status indicators and priority badges
+  - Overdue job highlighting
+- **Previous Features**
+  - Inviting Users sends e-mail
+  - Invitation Link sets up new user
 
 ## 🔐 Security Implementation
 
@@ -354,6 +406,7 @@ invitations/{inviteId}
 - **Role-based access**: Granular permissions based on user roles
 - **Bootstrap-friendly**: Allows initial organization creation
 - **Invitation security**: Token-based validation for team onboarding
+- **Job security**: Only organization members can view/edit jobs
 
 ### Key Security Features
 ```javascript
@@ -362,6 +415,15 @@ match /timeLogs/{logId} {
   allow read: if isAuthenticated() && 
                  (resource.data.userId == request.auth.uid ||
                   isManagerInSameOrg(resource.data.organizationId));
+}
+
+// Jobs can only be managed by managers and admins
+match /jobs/{jobId} {
+  allow read: if isAuthenticated() && 
+                 isInSameOrg(resource.data.organizationId);
+  allow write: if isAuthenticated() && 
+                  (isManager() || isAdmin()) &&
+                  isInSameOrg(resource.data.organizationId);
 }
 ```
 
@@ -378,9 +440,11 @@ Password: admin123
 # Test admin features:
 - Organization settings access
 - Full user management
-- Complete time tracking
+- Job creation and management
+- View all jobs dashboard
+- Complete/cancel jobs
 - Manager and employee invitations
-- Job Creation
+- View job statistics
 ```
 
 #### 2. Manager Workflow  
@@ -390,10 +454,12 @@ Email: ilan_danial+manager@outlook.com
 Password: manager123
 
 # Test manager features:
+- Job creation and management
 - Team status overview
 - Employee invitations
-- Time tracking supervision
-- Limited admin access
+- Complete/cancel jobs
+- View job hours and costs
+- Filter jobs by status
 ```
 
 #### 3. Employee Workflow
@@ -403,19 +469,25 @@ Email: ilan_danial+employee@outlook.com
 Password: employee123
 
 # Test employee features:
+- Clock in with job selection
+- View assigned jobs only
 - Personal time tracking
-- Clock in/out of Job
+- View job information in logs
 - Restricted navigation
-- No administrative access
+- No job management access
 ```
 
 ### Feature Testing Checklist
-- [ ] Multi-tenant organization creation
-- [ ] Role-based navigation visibility
-- [ ] Time tracking with work reports
-- [ ] Invitation system end-to-end
-- [ ] Real-time status updates
-- [ ] Database security rules
+- [x] Multi-tenant organization creation
+- [x] Role-based navigation visibility
+- [x] Job creation with comprehensive details
+- [x] Job management dashboard
+- [x] Time tracking with job selection
+- [x] Job completion and cancellation
+- [x] Job statistics and filtering
+- [x] Invitation system end-to-end
+- [x] Real-time status updates
+- [ ] Database security rules for jobs
 - [ ] Cross-platform desktop builds
 
 ## 🚨 Important Security Notes
@@ -475,6 +547,7 @@ Linux: Install platform-specific dependencies
 - **JavaScript-based sorting** for complex operations
 - **Real-time user status** with optimized updates
 - **Type-safe queries** to prevent runtime errors
+- **Job caching** for improved dashboard performance
 
 ### Database Query Patterns
 ```typescript
@@ -484,6 +557,14 @@ query(
   where('organizationId', '==', orgId),
   where('date', '>=', startDate),
   orderBy('date', 'desc')
+)
+
+// Job queries with status filtering
+query(
+  collection(db, 'jobs'),
+  where('organizationId', '==', orgId),
+  where('status', '==', 'active'),
+  orderBy('createdAt', 'desc')
 )
 ```
 
@@ -513,4 +594,4 @@ bun run tauri dev
 
 ---
 
-**TimeLink** - Professional time tracking for modern teams. Built with ❤️ using Tauri, React, and Firebase.
+**TimeLink** - Professional time tracking for modern teams with advanced job management. Built with ❤️ using Tauri, React, and Firebase.
