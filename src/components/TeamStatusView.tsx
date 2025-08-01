@@ -3,7 +3,6 @@ import { getDocs, collection, query, where } from "firebase/firestore";
 import { db } from "@/components/firebase";
 import { useAuth } from "@/components/AuthContext";
 import { TimeTrackingService } from "@/services/timeTrackingService";
-import type { UserStatus } from "@/types/models";
 
 interface EnrichedEmployee extends Employee {
   weekHours: number;
@@ -19,9 +18,8 @@ interface Employee {
   managerId?: string;
   organizationId: string;
   department?: string;
-  ManagedBy?: string; // Optional field for manager's name
+  ManagedBy?: string;
 }
-//here is a comment to test push
 
 export default function TeamStatusView() {
   const { profile } = useAuth();
@@ -46,7 +44,6 @@ export default function TeamStatusView() {
           id: doc.id,
         }));
 
-        // Load status info in parallel
         const enriched = await Promise.all(
           baseEmployees.map(async (emp) => {
             try {
@@ -80,6 +77,26 @@ export default function TeamStatusView() {
     fetchEmployees();
   }, [profile]);
 
+  const handleForceClockOut = async (empId: string) => {
+    try {
+      const result = await TimeTrackingService.forceClockOut(empId);
+      setEmployees((prev) =>
+        prev.map((emp) =>
+          emp.id === empId
+            ? {
+                ...emp,
+                status: "clocked_out",
+                currentJob: "--",
+                weekHours: result.weekHours,
+              }
+            : emp
+        )
+      );
+    } catch (err) {
+      console.error("Failed to force clock out:", err);
+    }
+  };
+
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Team Status</h2>
@@ -106,15 +123,18 @@ export default function TeamStatusView() {
                   <td className="px-4 py-2">{emp.ManagedBy || "--"}</td>
                   <td className="px-4 py-2">{emp.weekHours.toFixed(1)}h</td>
                   <td className="px-4 py-2">
-                    <span
-                      className={`px-2 py-1 text-xs rounded-full font-medium ${
-                        emp.status === "clocked_in"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-200 text-gray-700"
-                      }`}
-                    >
-                      {emp.status === "clocked_in" ? "Clocked In" : "Clocked Out"}
-                    </span>
+                    {emp.status === "clocked_in" && profile?.role !== "employee" ? (
+                      <button
+                        onClick={() => handleForceClockOut(emp.id)}
+                        className="px-2 py-1 text-xs rounded-full font-medium bg-green-100 text-green-800 hover:bg-green-200"
+                      >
+                        Clocked In (Click to Clock Out)
+                      </button>
+                    ) : (
+                      <span className="px-2 py-1 text-xs rounded-full font-medium bg-gray-200 text-gray-700">
+                        Clocked Out
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-2">{emp.currentJob}</td>
                 </tr>

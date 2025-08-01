@@ -22,6 +22,20 @@ import type { TimeLog, UserStatus, TimeSummary } from "@/types/models";
 
 export class TimeTrackingService {
   
+  static async forceClockOut(userId: string) {
+  const statusRef = doc(db, "userStatus", userId);
+  const timeLogRef = doc(db, "timeLogs", (await getDoc(statusRef)).data()?.currentTimeLogId);
+  
+  await updateDoc(timeLogRef, {
+    clockOut: new Date(),
+  });
+
+  await updateDoc(statusRef, {
+    currentStatus: "clocked_out",
+    clockedInAt: null,
+    currentTimeLogId: null,
+  });
+}
   // Clock In - Create new time log entry
   static async clockIn(
     userId: string,
