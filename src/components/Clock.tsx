@@ -176,6 +176,22 @@ export default function EmploymentClock() {
         )}
       </div>
 
+      {/*Earnings Summary*/}
+      <div className="grid grid-cols-2 gap-4 mb-2">
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg text-center">
+          <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+            ${profile?.wage?.toFixed(2) ?? "--"}
+          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Hourly Wage</p>
+        </div>
+        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg text-center">
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+            ${((profile?.wage ?? 0) * weekHours).toFixed(2)}
+          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Weekly Earnings</p>
+        </div>
+      </div>
+
       {/* Time Summary */}
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-center">
