@@ -7,6 +7,7 @@ import { InvitationService } from "@/services/invitationService";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/components/firebase";
 
+//Route for employers to invite employees to their organization on TimeLink
 export const Route = createFileRoute("/invite")({
   component: InvitePage,
 });

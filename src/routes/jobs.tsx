@@ -6,10 +6,12 @@ import { useAuth } from "@/components/AuthContext";
 import { JobService } from "@/services/jobService";
 import type { Job } from "@/types/models";
 
+//Jobs Page, allows employers to create and manage employee jobs
 export const Route = createFileRoute("/jobs")({
   component: JobsPage,
 });
 
+//Wrapper function for the jobs dashboard
 function JobsPage() {
   const navigate = useNavigate();
   const { user, profile, loading, isManager } = useAuth();
