@@ -4,6 +4,7 @@ import { db } from "@/components/firebase";
 import { useAuth } from "@/components/AuthContext";
 import { TimeTrackingService } from "@/services/timeTrackingService";
 
+//Interfaces for employee information didplayed in team status
 interface EnrichedEmployee extends Employee {
   weekHours: number;
   status: string;
@@ -23,12 +24,14 @@ interface Employee {
   wage?: number;
 }
 
+//Wrapper for the team status dashboard
 export default function TeamStatusView() {
   const { profile } = useAuth();
   const [employees, setEmployees] = useState<EnrichedEmployee[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    //Fetching employee data to display
     const fetchEmployees = async () => {
       if (!profile) return;
 
@@ -80,6 +83,7 @@ export default function TeamStatusView() {
     fetchEmployees();
   }, [profile]);
 
+  //Functionality for managers to force employees to clock out
   const handleForceClockOut = async (empId: string) => {
     try {
       const result = await TimeTrackingService.forceClockOut(empId);

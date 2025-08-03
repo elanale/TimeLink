@@ -6,6 +6,7 @@ import { TimeTrackingService } from "@/services/timeTrackingService";
 import type { TimeLog, UserStatus } from "@/types/models";
 import WorkReport from "./WorkReport";
 
+//Employee clocking in/out dashboard
 export default function EmploymentClock() {
   const { user, profile } = useAuth();
   const [userStatus, setUserStatus] = useState<UserStatus | null>(null);
@@ -48,6 +49,7 @@ export default function EmploymentClock() {
     loadUserData();
   }, [user, profile]);
 
+  //Time tracking functionality handling
   const handleClockIn = async (plan?: string) => {
     if (!user || !profile) return;
     
@@ -82,6 +84,7 @@ export default function EmploymentClock() {
     }
   };
 
+  //Handling work report modal functionality for WorkReport.tsx
   const handleReport = () => {
     if (activeTimeLog) {
       setReportMode("out");

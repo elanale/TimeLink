@@ -1,5 +1,8 @@
+// src/components/Footer.tsx
+
 const currentYear = new Date().getFullYear();
 
+//Website footer
 export default function Footer() {
 	return (
 		<footer className="bg-slate-950 border-t border-slate-800 text-sm text-gray-400 px-6 py-8">
