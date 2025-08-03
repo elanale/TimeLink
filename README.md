@@ -108,4 +108,4 @@ MIT License - See LICENSE file for details
 
 ---
 
-Built with ❤️ by Elan Wygodski
+Built with ❤️ by Elan Wygodski, Ilan Danial, Aidan Boudreau and Matt Beutel
