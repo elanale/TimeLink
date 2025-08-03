@@ -12,11 +12,11 @@ import { auth } from "@/components/firebase";
 import { OrganizationService } from "@/services/organizationService";
 import { UserService } from "@/services/userService";
 
+//Route to handle signup for new accounts
 export const Route = createFileRoute("/signup")({
   component: SignupPage,
 });
 
-// Toggle this to true to require a .edu email at signup
 const REQUIRE_EDU_CHECK = false;
 
 function SignupPage() {
@@ -51,6 +51,7 @@ function SignupPage() {
     }
   }, [user, loading, isSubmitting, navigate]);
 
+  //Form validation
   function validateAccountStep(): boolean {
     if (!firstName || !lastName || !email || !password) {
       setError("All fields are required");
@@ -130,9 +131,6 @@ function SignupPage() {
           phone: orgPhone,
         }
       );
-
-      // // 5. Waait 1 second before signing out
-      // await new Promise((res) => setTimeout(res, 500));
 
       // 6. Sign out the newly created user
       await signOut(auth);

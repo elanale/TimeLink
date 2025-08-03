@@ -113,6 +113,7 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
+//Wrapper function for the login page
 function LoginPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();

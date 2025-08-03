@@ -3,6 +3,7 @@ import { applyActionCode } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { auth } from "@/components/firebase";
 
+//Handling email verification for new signups
 export const Route = createFileRoute("/verify")({
   component: VerifyEmailPage,
 });
