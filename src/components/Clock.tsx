@@ -114,7 +114,7 @@ export default function EmploymentClock() {
     );
   }
 
-  const isCurrentlyClockedIn = activeTimeLog && userStatus?.currentStatus === 'clocked_in';
+  const isCurrentlyClockedIn = !!activeTimeLog && activeTimeLog.status === 'active' && userStatus?.currentStatus === 'clocked_in';
   const todayHours = userStatus?.todayHours || 0;
   const weekHours = userStatus?.weekHours || 0;
 
