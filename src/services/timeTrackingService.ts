@@ -21,21 +21,7 @@ import { db } from "@/components/firebase";
 import type { TimeLog, UserStatus, TimeSummary } from "@/types/models";
 
 export class TimeTrackingService {
-  
-  static async forceClockOut(userId: string) {
-  const statusRef = doc(db, "userStatus", userId);
-  const timeLogRef = doc(db, "timeLogs", (await getDoc(statusRef)).data()?.currentTimeLogId);
-  
-  await updateDoc(timeLogRef, {
-    clockOut: new Date(),
-  });
 
-  await updateDoc(statusRef, {
-    currentStatus: "clocked_out",
-    clockedInAt: null,
-    currentTimeLogId: null,
-  });
-}
   // Clock In - Create new time log entry
   static async clockIn(
     userId: string,
@@ -92,6 +78,43 @@ export class TimeTrackingService {
     return timeLogId;
   }
   
+  static async forceClockOut(userId: string) {
+  const statusRef = doc(db, "userStatus", userId);
+  const statusSnap = await getDoc(statusRef);
+  const currentTimeLogId = statusSnap.data()?.currentTimeLogId;
+
+  if (!currentTimeLogId) {
+    throw new Error("No active time log to force clock out.");
+  }
+
+  const timeLogRef = doc(db, "timeLogs", currentTimeLogId);
+  const timeLogSnap = await getDoc(timeLogRef);
+  const clockInTime = timeLogSnap.data()?.clockIn?.toDate?.();
+
+  if (!clockInTime) {
+    throw new Error("Invalid clock-in time.");
+  }
+
+  const now = new Date();
+  const totalHours = (now.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
+
+  await updateDoc(timeLogRef, {
+    clockOut: now,
+    totalHours: Math.round(totalHours * 100) / 100,
+    status: "completed",
+    updatedAt: new Date(),
+  });
+
+  await updateDoc(statusRef, {
+    currentStatus: "clocked_out",
+    clockedInAt: null,
+    currentTimeLogId: null,
+    todaysPlan: null,
+    updatedAt: new Date(),
+  });
+  
+  }
+
   // Clock Out - Complete time log entry
   static async clockOut(
     userId: string,
@@ -115,7 +138,9 @@ export class TimeTrackingService {
     status: 'completed',
     updatedAt: serverTimestamp(),
   };
-
+    //if (activeLog.clockInNote) {
+      //await this.updateJobActualHours(activeLog.clockInNote, activeLog.organizationId, totalHours);
+    //}
     if (report) {
       logUpdateData.clockOutNote = report;
     }
@@ -288,6 +313,27 @@ export class TimeTrackingService {
     return endOfWeek.toISOString().split('T')[0];
   }
   
+private static async updateJobActualHours(jobNumber: string, orgId: string, hoursToAdd: number) {
+  const q = query(
+    collection(db, 'jobs'),
+    where('organizationId', '==', orgId),
+    where('jobNumber', '==', jobNumber),
+    limit(1)
+  );
+
+  const snapshot = await getDocs(q);
+  if (!snapshot.empty) {
+    const jobDoc = snapshot.docs[0];
+    const jobRef = doc(db, 'jobs', jobDoc.id);
+
+    const current = jobDoc.data().actualHours || 0;
+
+    await updateDoc(jobRef, {
+      actualHours: current + hoursToAdd
+    });
+  }
+}
+
   // Generate time summary for reporting
   static async generateTimeSummary(
     userId: string,

@@ -20,12 +20,18 @@ interface EnrichedEmployee extends Employee {
   weekHours: number;
 }
 
+interface EditableFields {
+  wage: number;
+  weekHours: number;
+  ManagedBy: string;
+}
+
 export default function OrgSettingsView() {
   const { profile } = useAuth();
   const [employees, setEmployees] = useState<EnrichedEmployee[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [editableData, setEditableData] = useState<Record<string, { wage: number; weekHours: number }>>({});
+  const [editableData, setEditableData] = useState<Record<string, EditableFields>>({});
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -64,12 +70,12 @@ export default function OrgSettingsView() {
 
         setEmployees(enriched);
 
-        // Prepare editable copy
-        const editableCopy: typeof editableData = {};
+        const editableCopy: Record<string, EditableFields> = {};
         enriched.forEach((emp) => {
           editableCopy[emp.id] = {
             wage: emp.wage || 0,
             weekHours: emp.weekHours,
+            ManagedBy: emp.ManagedBy || "",
           };
         });
         setEditableData(editableCopy);
@@ -83,12 +89,16 @@ export default function OrgSettingsView() {
     fetchEmployees();
   }, [profile]);
 
-  const handleInputChange = (id: string, field: "wage" | "weekHours", value: number) => {
+  const handleInputChange = (
+    id: string,
+    field: keyof EditableFields,
+    value: string | number
+  ) => {
     setEditableData((prev) => ({
       ...prev,
       [id]: {
         ...prev[id],
-        [field]: value,
+        [field]: typeof value === "string" ? value : Number(value),
       },
     }));
   };
@@ -97,21 +107,24 @@ export default function OrgSettingsView() {
     try {
       await Promise.all(
         employees.map(async (emp) => {
-          const newWage = editableData[emp.id].wage;
-          if (newWage !== emp.wage) {
-            await updateDoc(doc(db, "users", emp.id), {
-              wage: newWage,
-            });
+          const { wage, ManagedBy } = editableData[emp.id];
+          const updates: Partial<Employee> = {};
+
+          if (wage !== emp.wage) updates.wage = wage;
+          if (ManagedBy !== emp.ManagedBy) updates.ManagedBy = ManagedBy;
+
+          if (Object.keys(updates).length > 0) {
+            await updateDoc(doc(db, "users", emp.id), updates);
           }
         })
       );
 
-      // Reflect new values in UI
       setEmployees((prev) =>
         prev.map((emp) => ({
           ...emp,
           wage: editableData[emp.id].wage,
           weekHours: editableData[emp.id].weekHours,
+          ManagedBy: editableData[emp.id].ManagedBy,
         }))
       );
 
@@ -122,12 +135,12 @@ export default function OrgSettingsView() {
   };
 
   const handleCancel = () => {
-    // Reset editable fields
-    const resetCopy: typeof editableData = {};
+    const resetCopy: Record<string, EditableFields> = {};
     employees.forEach((emp) => {
       resetCopy[emp.id] = {
         wage: emp.wage || 0,
         weekHours: emp.weekHours,
+        ManagedBy: emp.ManagedBy || "",
       };
     });
     setEditableData(resetCopy);
@@ -182,7 +195,20 @@ export default function OrgSettingsView() {
               {employees.map((emp) => (
                 <tr key={emp.id} className="border-b border-gray-200 dark:border-gray-600">
                   <td className="px-4 py-2">{emp.displayName || emp.email}</td>
-                  <td className="px-4 py-2">{emp.ManagedBy || "--"}</td>
+                  <td className="px-4 py-2">
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        className="w-32 px-2 py-1 rounded bg-gray-100 dark:bg-gray-700"
+                        value={editableData[emp.id]?.ManagedBy ?? ""}
+                        onChange={(e) =>
+                          handleInputChange(emp.id, "ManagedBy", e.target.value)
+                        }
+                      />
+                    ) : (
+                      emp.ManagedBy || "--"
+                    )}
+                  </td>
                   <td className="px-4 py-2">
                     {isEditing ? (
                       <input
