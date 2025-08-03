@@ -9,6 +9,7 @@ import {
   getDocs
 } from 'firebase/firestore';
 
+//Wrapper function for the employee work and planning report
 export default function WorkReport(props: {
   isOpen: boolean;
   status: 'in' | 'out';
@@ -16,7 +17,7 @@ export default function WorkReport(props: {
   onClose: () => void;
 }) {
   const { isOpen, status, onSave, onClose } = props;
-  const { profile } = useAuth(); // Get current user's org info
+  const { profile } = useAuth();
 
   const [jobNumber, setJobNumber] = useState('');
   const [error, setError] = useState('');
@@ -26,9 +27,11 @@ export default function WorkReport(props: {
   const handleBackdropClick = () => onClose();
   const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
 
+  //Functionality for report's save button
   const handleSave = async () => {
     const value = jobNumber.trim();
 
+    //Requirements for saving when clocked in
     if (status === 'in') {
       if (!value) {
         setError('Job number is required.');

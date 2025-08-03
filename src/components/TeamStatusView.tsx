@@ -4,11 +4,11 @@ import { db } from "@/components/firebase";
 import { useAuth } from "@/components/AuthContext";
 import { TimeTrackingService } from "@/services/timeTrackingService";
 
+//Interfaces for employee information didplayed in team status
 interface EnrichedEmployee extends Employee {
   weekHours: number;
   status: string;
   currentJob: string;
-  wage?: number;
 }
 
 interface Employee {
@@ -20,15 +20,16 @@ interface Employee {
   organizationId: string;
   department?: string;
   ManagedBy?: string;
-  wage?: number;
 }
 
+//Wrapper for the team status dashboard
 export default function TeamStatusView() {
   const { profile } = useAuth();
   const [employees, setEmployees] = useState<EnrichedEmployee[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    //Fetching employee data to display
     const fetchEmployees = async () => {
       if (!profile) return;
 
@@ -55,7 +56,6 @@ export default function TeamStatusView() {
                 weekHours: status?.weekHours || 0,
                 status: status?.currentStatus || "clocked_out",
                 currentJob: status?.todaysPlan || "--",
-                wage: emp.wage || 0,
               };
             } catch {
               return {
@@ -68,7 +68,17 @@ export default function TeamStatusView() {
           })
         );
 
-        const filtered = enriched.filter(emp => emp.ManagedBy === "Sarah Johnson");
+        // Filter based on user role
+        let filtered: EnrichedEmployee[] = [];
+
+        if (profile.role === "admin") {
+          filtered = enriched;
+        } else if (profile.role === "manager") {
+          filtered = enriched.filter(
+            (emp) => emp.ManagedBy === profile.displayName
+          );
+        }
+
         setEmployees(filtered);
       } catch (err) {
         console.error("Error fetching employees:", err);
@@ -80,25 +90,28 @@ export default function TeamStatusView() {
     fetchEmployees();
   }, [profile]);
 
+  //Functionality for managers to force employees to clock out
   const handleForceClockOut = async (empId: string) => {
-    try {
-      const result = await TimeTrackingService.forceClockOut(empId);
-      setEmployees((prev) =>
-        prev.map((emp) =>
-          emp.id === empId
-            ? {
-                ...emp,
-                status: "clocked_out",
-                currentJob: "--",
-                weekHours: result.weekHours,
-              }
-            : emp
-        )
-      );
-    } catch (err) {
-      console.error("Failed to force clock out:", err);
-    }
-  };
+  try {
+    await TimeTrackingService.forceClockOut(empId);
+    const status = await TimeTrackingService.getUserStatus(empId);
+
+    setEmployees((prev) =>
+      prev.map((emp) =>
+        emp.id === empId
+          ? {
+              ...emp,
+              weekHours: status?.weekHours || 0,
+              status: status?.currentStatus || "clocked_out",
+              currentJob: "--",
+            }
+          : emp
+      )
+    );
+  } catch (err) {
+    console.error("Failed to force clock out:", err);
+  }
+};
 
   return (
     <div className="p-4">
@@ -115,7 +128,6 @@ export default function TeamStatusView() {
                 <th className="px-4 py-2 text-left text-sm">Name</th>
                 <th className="px-4 py-2 text-left text-sm">Managed By</th>
                 <th className="px-4 py-2 text-left text-sm">Hours This Week</th>
-                <th className="px-4 py-2 text-left text-sm">Weekly Earnings</th>
                 <th className="px-4 py-2 text-left text-sm">Status</th>
                 <th className="px-4 py-2 text-left text-sm">Current Job</th>
               </tr>
@@ -126,7 +138,6 @@ export default function TeamStatusView() {
                   <td className="px-4 py-2">{emp.displayName || emp.email}</td>
                   <td className="px-4 py-2">{emp.ManagedBy || "--"}</td>
                   <td className="px-4 py-2">{emp.weekHours.toFixed(1)}h</td>
-                  <td className="px-4 py-2">${((emp.wage || 0) * emp.weekHours).toFixed(2)}</td>
                   <td className="px-4 py-2">
                     {emp.status === "clocked_in" && profile?.role !== "employee" ? (
                       <button

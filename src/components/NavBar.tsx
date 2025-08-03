@@ -1,10 +1,11 @@
-// src/components/NavBar.tsx - Added Invite navigation
+// src/components/NavBar.tsx
 
 import { Link, useNavigate } from "@tanstack/react-router";
 import { signOut } from "firebase/auth";
 import { useAuth } from "@/components/AuthContext";
 import { auth } from "@/components/firebase";
 
+//Wrapper for Navigation Bar at top of website, handles links to Home page, various dashboards, and logging in/out
 export default function NavBar() {
   const { user, isManager, isAdmin } = useAuth(); // Added isManager and isAdmin
   const navigate = useNavigate();
