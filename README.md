@@ -1,6 +1,5 @@
 # TimeLink
-
-A desktop time-tracking application for businesses with job management, built with Tauri, React, and Firebase.
+An application for buisnesses to keep track of time for job management.
 
 ## 🚀 Quick Start
 
@@ -18,7 +17,7 @@ bun run tauri dev
 
 ## 🧪 Test Accounts
 
-Use these pre-configured accounts to explore different roles:
+These are pre created accounts to test and demo different roles work flows.
 
 ### Organization: "Danial Tech Solutions"
 
@@ -28,35 +27,36 @@ Use these pre-configured accounts to explore different roles:
 | **Manager** | ilan_danial+manager@outlook.com | manager123 | Team & job management |
 | **Employee** | ilan_danial+employee@outlook.com | employee123 | Time tracking only |
 
-> **Note:** Email verification is temporarily disabled for testing
+> **Note:** We currently have email verification closed for testing purposes
 
 ## ✨ Key Features
 
 ### For Employees
-- Clock in/out with **job selection** (required)
-- View personal time logs and weekly earnings
-- Track hours by job
+- Clocking in and out with while requiring job selection
+- Having a view of their personal timetables and weekly earnings
+- Keep track of hours by the job
 
 ### For Managers
-- Create and manage jobs with detailed tracking
-- View team status and hours
-- Invite new team members
-- Complete or cancel jobs
+- Implement Jobs and manage them with detailed tracking features
+- A view for team status and hours of employees managed by their specified managers
+- The ability to invite new employees to the system
+- The functionality of completing or cancelling jobs with the jobs dashboard
 
 ### For Admins
-- Full organization management
-- Employee wage settings
+
+- Total control of organization with full permissions
+- Access to employee wage settings
 - Access to all manager features
 
 ## 🏗️ Job Management
 
 Jobs include:
-- Job number and name
-- Client and location info
-- Priority levels (Low → Urgent)
+- Job # and name
+- Client and location data
+- Urgency Tiering
 - Time estimates vs actual hours
 - Status tracking (Active/Completed/Cancelled)
-- Cost calculations
+- Calculations of the costs of jobs
 
 ## 🛠️ Tech Stack
 
