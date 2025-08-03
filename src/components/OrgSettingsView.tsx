@@ -4,6 +4,7 @@ import { db } from "@/components/firebase";
 import { useAuth } from "@/components/AuthContext";
 import { TimeTrackingService } from "@/services/timeTrackingService";
 
+//Interfaces for employee data to be displayed
 interface Employee {
   id: string;
   displayName?: string;
@@ -26,6 +27,7 @@ interface EditableFields {
   ManagedBy: string;
 }
 
+//Wrapper function for the organization settings dashboard
 export default function OrgSettingsView() {
   const { profile } = useAuth();
   const [employees, setEmployees] = useState<EnrichedEmployee[]>([]);
@@ -34,7 +36,8 @@ export default function OrgSettingsView() {
   const [editableData, setEditableData] = useState<Record<string, EditableFields>>({});
 
   useEffect(() => {
-    const fetchEmployees = async () => {
+      //Fetch employee data from database
+      const fetchEmployees = async () => {
       if (!profile) return;
 
       setLoading(true);
@@ -102,7 +105,7 @@ export default function OrgSettingsView() {
       },
     }));
   };
-
+  //Save button for edits made by admin to employee data
   const handleSave = async () => {
     try {
       await Promise.all(
@@ -134,6 +137,7 @@ export default function OrgSettingsView() {
     }
   };
 
+  //Cancel button
   const handleCancel = () => {
     const resetCopy: Record<string, EditableFields> = {};
     employees.forEach((emp) => {
