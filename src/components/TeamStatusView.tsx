@@ -8,6 +8,7 @@ interface EnrichedEmployee extends Employee {
   weekHours: number;
   status: string;
   currentJob: string;
+  wage?: number;
 }
 
 interface Employee {
@@ -19,6 +20,7 @@ interface Employee {
   organizationId: string;
   department?: string;
   ManagedBy?: string;
+  wage?: number;
 }
 
 export default function TeamStatusView() {
@@ -53,6 +55,7 @@ export default function TeamStatusView() {
                 weekHours: status?.weekHours || 0,
                 status: status?.currentStatus || "clocked_out",
                 currentJob: status?.todaysPlan || "--",
+                wage: emp.wage || 0,
               };
             } catch {
               return {
@@ -112,6 +115,7 @@ export default function TeamStatusView() {
                 <th className="px-4 py-2 text-left text-sm">Name</th>
                 <th className="px-4 py-2 text-left text-sm">Managed By</th>
                 <th className="px-4 py-2 text-left text-sm">Hours This Week</th>
+                <th className="px-4 py-2 text-left text-sm">Weekly Earnings</th>
                 <th className="px-4 py-2 text-left text-sm">Status</th>
                 <th className="px-4 py-2 text-left text-sm">Current Job</th>
               </tr>
@@ -122,6 +126,7 @@ export default function TeamStatusView() {
                   <td className="px-4 py-2">{emp.displayName || emp.email}</td>
                   <td className="px-4 py-2">{emp.ManagedBy || "--"}</td>
                   <td className="px-4 py-2">{emp.weekHours.toFixed(1)}h</td>
+                  <td className="px-4 py-2">${((emp.wage || 0) * emp.weekHours).toFixed(2)}</td>
                   <td className="px-4 py-2">
                     {emp.status === "clocked_in" && profile?.role !== "employee" ? (
                       <button
