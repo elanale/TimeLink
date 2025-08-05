@@ -4,7 +4,6 @@ import { db } from "@/components/firebase";
 import { useAuth } from "@/components/AuthContext";
 import { TimeTrackingService } from "@/services/timeTrackingService";
 
-//Interfaces for employee information didplayed in team status
 interface EnrichedEmployee extends Employee {
   weekHours: number;
   status: string;
@@ -22,14 +21,12 @@ interface Employee {
   ManagedBy?: string;
 }
 
-//Wrapper for the team status dashboard
 export default function TeamStatusView() {
   const { profile } = useAuth();
   const [employees, setEmployees] = useState<EnrichedEmployee[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    //Fetching employee data to display
     const fetchEmployees = async () => {
       if (!profile) return;
 
@@ -90,10 +87,13 @@ export default function TeamStatusView() {
     fetchEmployees();
   }, [profile]);
 
-  //Functionality for managers to force employees to clock out
   const handleForceClockOut = async (empId: string) => {
   try {
     await TimeTrackingService.forceClockOut(empId);
+
+    // Wait 500ms for Firestore
+    await new Promise((res) => setTimeout(res, 500));
+
     const status = await TimeTrackingService.getUserStatus(empId);
 
     setEmployees((prev) =>
@@ -104,6 +104,7 @@ export default function TeamStatusView() {
               weekHours: status?.weekHours || 0,
               status: status?.currentStatus || "clocked_out",
               currentJob: "--",
+              isActive: status?.isActive ?? false,
             }
           : emp
       )
@@ -112,7 +113,6 @@ export default function TeamStatusView() {
     console.error("Failed to force clock out:", err);
   }
 };
-
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Team Status</h2>

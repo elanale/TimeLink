@@ -17,12 +17,11 @@ import {
   deleteDoc
 } from "firebase/firestore";
 import { db } from "@/components/firebase";
-// FIXED: Import from models instead of timeTracking
 import type { TimeLog, UserStatus, TimeSummary } from "@/types/models";
 
 export class TimeTrackingService {
 
-  // Clock In - Create new time log entry
+  // Clock In function
   static async clockIn(
     userId: string,
     organizationId: string,
@@ -30,15 +29,14 @@ export class TimeTrackingService {
     plan?: string,
     department?: string
   ): Promise<string> {
-    // Check if user is already clocked in
     const activeLog = await this.getActiveTimeLog(userId);
     if (activeLog) {
       throw new Error("You are already clocked in. Please clock out first.");
-    }
+    } //shouldt get here as button changes automatically but just in case/ testing purposes
     
     const timeLogId = doc(collection(db, 'timeLogs')).id;
     const now = new Date();
-    const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const dateStr = now.toISOString().split('T')[0];
     
     const timeLog: Omit<TimeLog, 'id'> = {
       organizationId,
@@ -54,11 +52,9 @@ export class TimeTrackingService {
     };
     
     const batch = writeBatch(db);
-    
-    // Create time log
     batch.set(doc(db, 'timeLogs', timeLogId), timeLog);
     
-    // Update user status
+    //Update user status
     const userStatus: Omit<UserStatus, 'id'> = {
       organizationId,
       isActive: true,
@@ -78,6 +74,7 @@ export class TimeTrackingService {
     return timeLogId;
   }
   
+  //Force Clock Out - Admin function to forcefully clock out a user
   static async forceClockOut(userId: string) {
   const statusRef = doc(db, "userStatus", userId);
   const statusSnap = await getDoc(statusRef);
@@ -115,7 +112,7 @@ export class TimeTrackingService {
   
   }
 
-  // Clock Out - Complete time log entry
+  // Clock Out function - Complete time log entry
   static async clockOut(
     userId: string,
     report?: string
@@ -128,6 +125,13 @@ export class TimeTrackingService {
     const now = new Date();
     const clockInTime = activeLog.clockIn.toDate();
     const totalHours = (now.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
+    if (activeLog.clockInNote) {
+      await this.updateJobActualHours(
+        activeLog.clockInNote,
+        activeLog.organizationId,
+        totalHours
+      );
+    }
     
     const batch = writeBatch(db);
     
@@ -138,9 +142,6 @@ export class TimeTrackingService {
     status: 'completed',
     updatedAt: serverTimestamp(),
   };
-    //if (activeLog.clockInNote) {
-      //await this.updateJobActualHours(activeLog.clockInNote, activeLog.organizationId, totalHours);
-    //}
     if (report) {
       logUpdateData.clockOutNote = report;
     }
@@ -150,14 +151,16 @@ export class TimeTrackingService {
     
     // Update user status
     const dateStr = now.toISOString().split('T')[0];
+    const existingTodayHours = await this.calculateTodayHours(userId, dateStr);
+    const existingWeekHours = await this.calculateWeekHours(userId, dateStr);
     batch.update(doc(db, 'userStatus', userId), {
       currentStatus: 'clocked_out',
       lastActivity: serverTimestamp(),
       currentTimeLogId: null,
       clockedInAt: null,
       todaysPlan: null,
-      todayHours: await this.calculateTodayHours(userId, dateStr) + totalHours,
-      weekHours: await this.calculateWeekHours(userId, dateStr) + totalHours,
+      todayHours: Math.round((existingTodayHours + totalHours) * 100) / 100,
+      weekHours: Math.round((existingWeekHours + totalHours) * 100) / 100,
       updatedAt: serverTimestamp(),
     });
     
@@ -186,27 +189,22 @@ export class TimeTrackingService {
   startDate: string,
   endDate: string
 ): Promise<TimeLog[]> {
-  // SIMPLIFIED QUERY - Remove the dual orderBy that's causing issues
   const q = query(
     collection(db, 'timeLogs'),
     where('userId', '==', userId),
     where('date', '>=', startDate),
     where('date', '<=', endDate),
-    orderBy('date', 'desc')  // Only order by date, remove clockIn orderBy
-    // Removed: orderBy('clockIn', 'desc') - this was causing the complex index requirement
+    orderBy('date', 'desc')  //order by date
   );
   
   const snapshot = await getDocs(q);
   
-  // Sort by clockIn in JavaScript after fetching (if needed)
   const logs = snapshot.docs.map(docSnap => ({
     id: docSnap.id,
     ...docSnap.data()
   } as TimeLog));
   
-  // Sort by clockIn time in JavaScript
   return logs.sort((a, b) => {
-    // First sort by date (desc), then by clockIn time (desc)
     if (a.date !== b.date) {
       return b.date.localeCompare(a.date);
     }
@@ -214,7 +212,6 @@ export class TimeTrackingService {
   });
 }
 
-  
   // Get current team status (for managers)
   static async getTeamStatus(organizationId: string): Promise<UserStatus[]> {
     const q = query(
@@ -302,7 +299,7 @@ export class TimeTrackingService {
   private static getStartOfWeek(dateStr: string): string {
     const date = new Date(dateStr);
     const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Monday as start
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); //Weeks Start on Monday
     const startOfWeek = new Date(date.setDate(diff));
     return startOfWeek.toISOString().split('T')[0];
   }
@@ -313,7 +310,11 @@ export class TimeTrackingService {
     return endOfWeek.toISOString().split('T')[0];
   }
   
-private static async updateJobActualHours(jobNumber: string, orgId: string, hoursToAdd: number) {
+private static async updateJobActualHours(
+  jobNumber: string,
+  orgId: string,
+  hoursToAdd: number
+) {
   const q = query(
     collection(db, 'jobs'),
     where('organizationId', '==', orgId),
@@ -329,7 +330,7 @@ private static async updateJobActualHours(jobNumber: string, orgId: string, hour
     const current = jobDoc.data().actualHours || 0;
 
     await updateDoc(jobRef, {
-      actualHours: current + hoursToAdd
+      actualHours: Math.round((current + hoursToAdd) * 100) / 100
     });
   }
 }
