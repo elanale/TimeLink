@@ -6,13 +6,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyACMCPN5dVUj2O9kpq3kH_RtR_fl96pQaY",
-  authDomain: "timelink-2c725.firebaseapp.com",
-  projectId: "timelink-2c725",
-  storageBucket: "timelink-2c725.firebasestorage.app",
-  messagingSenderId: "716400087923",
-  appId: "1:716400087923:web:6b436886fe1e692244ab06",
-  measurementId: "G-C8KLDQSX67"
+//Insert API KEYS
 };
 
 const app = initializeApp(firebaseConfig);
